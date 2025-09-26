@@ -4,6 +4,7 @@ import {
   faBoxesPacking,
   faCalendarAlt,
   faCalendarDay,
+  faEllipsisV,
   faFileContract,
   faFileInvoice,
   faHashtag,
@@ -12,6 +13,7 @@ import {
   faPercent,
   faPlus,
   faSave,
+  faShareAlt,
   faTag,
   faTimes,
   faTrashAlt,
@@ -28,6 +30,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Share,
   StyleSheet,
   View,
 } from "react-native";
@@ -39,6 +42,7 @@ import {
   Card,
   Divider,
   IconButton,
+  Menu,
   Modal,
   Portal,
   Text,
@@ -126,6 +130,7 @@ const ReceiptDetails = () => {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+  const [isMoreMenuVisible, setMoreMenuVisible] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -283,6 +288,20 @@ const ReceiptDetails = () => {
     );
   };
 
+  const handleShare = async () => {
+    if (!receipt) return;
+    try {
+      const message = `
+Receipt: ${formData.title}
+Billed To: ${formData.billTo}
+Total Amount: ₹${total.toFixed(2)}
+    `.trim();
+      await Share.share({ message });
+    } catch (error) {
+      Alert.alert("Error", "Failed to share receipt.");
+    }
+  };
+
   if (!receipt) {
     return (
       <PlatformLayout>
@@ -320,23 +339,52 @@ const ReceiptDetails = () => {
           onPress={() => router.back()}
         />
         <Appbar.Content title="Receipt Details" />
-        <Button
-          onPress={handleDelete}
-          textColor={theme.colors.error}
-          disabled={deleting}
-          loading={deleting}
-          icon={() => (
-            <FontAwesomeIcon
-              icon={faTrashAlt}
-              size={18}
-              color={
-                deleting ? theme.colors.onSurfaceDisabled : theme.colors.error
-              }
+        <Menu
+          visible={isMoreMenuVisible}
+          onDismiss={() => setMoreMenuVisible(false)}
+          anchor={
+            <Appbar.Action
+              icon={() => (
+                <FontAwesomeIcon
+                  icon={faEllipsisV}
+                  size={22}
+                  color={theme.colors.onSurface}
+                />
+              )}
+              onPress={() => setMoreMenuVisible(true)}
             />
-          )}
+          }
         >
-          Delete
-        </Button>
+          <Menu.Item
+            onPress={() => {
+              setMoreMenuVisible(false);
+              handleDelete();
+            }}
+            title="Delete Receipt"
+            leadingIcon={() => (
+              <FontAwesomeIcon
+                icon={faTrashAlt}
+                size={20}
+                color={theme.colors.error}
+              />
+            )}
+            titleStyle={{ color: theme.colors.error }}
+          />
+          <Menu.Item
+            onPress={() => {
+              setMoreMenuVisible(false);
+              handleShare();
+            }}
+            title="Share Receipt"
+            leadingIcon={() => (
+              <FontAwesomeIcon
+                icon={faShareAlt}
+                size={20}
+                color={theme.colors.onSurfaceVariant}
+              />
+            )}
+          />
+        </Menu>
       </Appbar.Header>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}

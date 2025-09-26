@@ -1,13 +1,15 @@
 import PlatformLayout from "@/components/layout/PlatformLayout";
 import { CONTACT_TYPES } from "@/constants/options";
+import axiosInstance from "@/lib/axiosInstance";
 import {
   faArrowLeft,
-  faCamera,
   faChevronDown,
+  faEllipsisV,
   faEnvelope,
   faPencilAlt,
   faPhone,
   faSave,
+  faShareAlt,
   faTimes,
   faTrashAlt,
   faUpload,
@@ -25,6 +27,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Share,
   StyleSheet,
   View,
 } from "react-native";
@@ -110,6 +113,7 @@ const ContactDetails = () => {
   const [deleting, setDeleting] = useState(false);
   const [isTypeMenuVisible, setTypeMenuVisible] = useState(false);
   const [isImageModalVisible, setImageModalVisible] = useState(false);
+  const [isMoreMenuVisible, setMoreMenuVisible] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -207,9 +211,12 @@ const ContactDetails = () => {
             setDeleting(true);
             try {
               const token = await AsyncStorage.getItem("accessToken");
-              await api.delete(`/contacts/delete/${contact.contact_id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              });
+              await axiosInstance.delete(
+                `/contacts/delete/${contact.contact_id}`,
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                }
+              );
               Alert.alert("Success", "Contact deleted.");
               router.replace(
                 `/platform/${user_id}/crm?view=contacts&refresh=${new Date().getTime()}`
@@ -223,6 +230,20 @@ const ContactDetails = () => {
         },
       ]
     );
+  };
+
+  const handleShare = async () => {
+    if (!contact) return;
+    try {
+      const message = `
+Name: ${formData.firstName} ${formData.lastName}
+Phone: ${formData.phoneNumber || "N/A"}
+Email: ${formData.email || "N/A"}
+    `.trim();
+      await Share.share({ message });
+    } catch (error) {
+      Alert.alert("Error", "Failed to share contact.");
+    }
   };
 
   const handlePickImage = async () => {
@@ -293,6 +314,52 @@ const ContactDetails = () => {
           onPress={() => router.back()}
         />
         <Appbar.Content title="Contact Details" />
+        <Menu
+          visible={isMoreMenuVisible}
+          onDismiss={() => setMoreMenuVisible(false)}
+          anchor={
+            <Appbar.Action
+              icon={() => (
+                <FontAwesomeIcon
+                  icon={faEllipsisV}
+                  size={22}
+                  color={theme.colors.onSurface}
+                />
+              )}
+              onPress={() => setMoreMenuVisible(true)}
+            />
+          }
+        >
+          <Menu.Item
+            onPress={() => {
+              setMoreMenuVisible(false);
+              handleDelete();
+            }}
+            title="Delete Contact"
+            leadingIcon={() => (
+              <FontAwesomeIcon
+                icon={faTrashAlt}
+                size={20}
+                color={theme.colors.error}
+              />
+            )}
+            titleStyle={{ color: theme.colors.error }}
+          />
+          <Menu.Item
+            onPress={() => {
+              setMoreMenuVisible(false);
+              handleShare();
+            }}
+            title="Share Contact"
+            leadingIcon={() => (
+              <FontAwesomeIcon
+                icon={faShareAlt}
+                size={20}
+                color={theme.colors.onSurfaceVariant}
+              />
+            )}
+          />
+        </Menu>
       </Appbar.Header>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -368,25 +435,6 @@ const ContactDetails = () => {
               disabled={!formData.email}
             >
               Email
-            </Button>
-            <Button
-              icon={() => (
-                <FontAwesomeIcon
-                  icon={faTrashAlt}
-                  size={18}
-                  color={
-                    deleting
-                      ? theme.colors.onSurfaceDisabled
-                      : theme.colors.error
-                  }
-                />
-              )}
-              onPress={handleDelete}
-              disabled={deleting}
-              loading={deleting}
-              textColor={theme.colors.error}
-            >
-              Delete
             </Button>
           </View>
           <Card style={styles.card}>

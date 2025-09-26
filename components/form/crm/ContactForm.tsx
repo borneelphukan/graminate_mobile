@@ -5,8 +5,22 @@ import {
   Menu,
   TextInput,
   TouchableRipple,
+  useTheme,
 } from "react-native-paper";
 import { FormModal } from "../../modals/FormModal";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import {
+  faUser,
+  faEnvelope,
+  faPhone,
+  faAddressBook,
+  faMapPin,
+  faCity,
+  faMap,
+  faHashtag,
+  faChevronDown,
+} from "@fortawesome/free-solid-svg-icons";
 
 const CONTACT_TYPES = [
   "Customer",
@@ -42,27 +56,58 @@ const PaperFormDropdown = ({
   selectedValue,
   onSelect,
   error,
-}: any) => {
+  leftIcon,
+}: {
+  label: string;
+  items: string[];
+  selectedValue: string;
+  onSelect: (value: string) => void;
+  error?: string;
+  leftIcon?: IconDefinition;
+}) => {
   const [visible, setVisible] = useState(false);
-  const openMenu = () => setVisible(true);
-  const closeMenu = () => setVisible(false);
+  const theme = useTheme();
 
   return (
     <View style={styles.inputContainer}>
       <Menu
         visible={visible}
-        onDismiss={closeMenu}
+        onDismiss={() => setVisible(false)}
         anchor={
-          <TouchableRipple onPress={openMenu}>
-            <TextInput
-              mode="outlined"
-              label={label}
-              value={selectedValue}
-              editable={false}
-              pointerEvents="none"
-              right={<TextInput.Icon icon="menu-down" />}
-              error={!!error}
-            />
+          <TouchableRipple onPress={() => setVisible(true)}>
+            <View pointerEvents="none">
+              <TextInput
+                mode="outlined"
+                label={label}
+                value={selectedValue}
+                editable={false}
+                left={
+                  leftIcon && (
+                    <TextInput.Icon
+                      icon={() => (
+                        <FontAwesomeIcon
+                          icon={leftIcon}
+                          size={18}
+                          color={theme.colors.onSurfaceVariant}
+                        />
+                      )}
+                    />
+                  )
+                }
+                right={
+                  <TextInput.Icon
+                    icon={() => (
+                      <FontAwesomeIcon
+                        icon={faChevronDown}
+                        size={16}
+                        color={theme.colors.onSurfaceVariant}
+                      />
+                    )}
+                  />
+                }
+                error={!!error}
+              />
+            </View>
           </TouchableRipple>
         }
       >
@@ -72,7 +117,7 @@ const PaperFormDropdown = ({
             title={item}
             onPress={() => {
               onSelect(item);
-              closeMenu();
+              setVisible(false);
             }}
           />
         ))}
@@ -85,6 +130,7 @@ const PaperFormDropdown = ({
 };
 
 const ContactForm = ({ isVisible, onClose, onSubmit }: ContactFormProps) => {
+  const theme = useTheme();
   const [formData, setFormData] = useState<ContactFormData>({
     first_name: "",
     last_name: "",
@@ -145,6 +191,7 @@ const ContactForm = ({ isVisible, onClose, onSubmit }: ContactFormProps) => {
       await onSubmit(formData);
       onClose();
     } catch (error) {
+      // Handle submission error (e.g., show an alert)
     } finally {
       setIsSubmitting(false);
     }
@@ -173,6 +220,17 @@ const ContactForm = ({ isVisible, onClose, onSubmit }: ContactFormProps) => {
                 value={formData.first_name}
                 onChangeText={(text) => handleInputChange("first_name", text)}
                 error={!!errors.first_name}
+                left={
+                  <TextInput.Icon
+                    icon={() => (
+                      <FontAwesomeIcon
+                        icon={faUser}
+                        size={18}
+                        color={theme.colors.onSurfaceVariant}
+                      />
+                    )}
+                  />
+                }
               />
               <HelperText type="error" visible={!!errors.first_name}>
                 {errors.first_name}
@@ -196,6 +254,17 @@ const ContactForm = ({ isVisible, onClose, onSubmit }: ContactFormProps) => {
             value={formData.email}
             onChangeText={(text) => handleInputChange("email", text)}
             error={!!errors.email}
+            left={
+              <TextInput.Icon
+                icon={() => (
+                  <FontAwesomeIcon
+                    icon={faEnvelope}
+                    size={18}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                )}
+              />
+            }
           />
           <HelperText type="error" visible={!!errors.email}>
             {errors.email}
@@ -208,6 +277,18 @@ const ContactForm = ({ isVisible, onClose, onSubmit }: ContactFormProps) => {
             value={formData.phone_number}
             onChangeText={(text) => handleInputChange("phone_number", text)}
             error={!!errors.phone_number}
+            keyboardType="phone-pad"
+            left={
+              <TextInput.Icon
+                icon={() => (
+                  <FontAwesomeIcon
+                    icon={faPhone}
+                    size={18}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                )}
+              />
+            }
           />
           <HelperText type="error" visible={!!errors.phone_number}>
             {errors.phone_number}
@@ -219,6 +300,7 @@ const ContactForm = ({ isVisible, onClose, onSubmit }: ContactFormProps) => {
             selectedValue={formData.type}
             onSelect={(type: string) => handleInputChange("type", type)}
             error={errors.type}
+            leftIcon={faAddressBook}
           />
 
           <TextInput
@@ -228,6 +310,17 @@ const ContactForm = ({ isVisible, onClose, onSubmit }: ContactFormProps) => {
             value={formData.address_line_1}
             onChangeText={(text) => handleInputChange("address_line_1", text)}
             error={!!errors.address_line_1}
+            left={
+              <TextInput.Icon
+                icon={() => (
+                  <FontAwesomeIcon
+                    icon={faMapPin}
+                    size={18}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                )}
+              />
+            }
           />
           <HelperText type="error" visible={!!errors.address_line_1}>
             {errors.address_line_1}
@@ -250,6 +343,17 @@ const ContactForm = ({ isVisible, onClose, onSubmit }: ContactFormProps) => {
                 value={formData.city}
                 onChangeText={(text) => handleInputChange("city", text)}
                 error={!!errors.city}
+                left={
+                  <TextInput.Icon
+                    icon={() => (
+                      <FontAwesomeIcon
+                        icon={faCity}
+                        size={18}
+                        color={theme.colors.onSurfaceVariant}
+                      />
+                    )}
+                  />
+                }
               />
               <HelperText type="error" visible={!!errors.city}>
                 {errors.city}
@@ -263,6 +367,17 @@ const ContactForm = ({ isVisible, onClose, onSubmit }: ContactFormProps) => {
                 value={formData.state}
                 onChangeText={(text) => handleInputChange("state", text)}
                 error={!!errors.state}
+                left={
+                  <TextInput.Icon
+                    icon={() => (
+                      <FontAwesomeIcon
+                        icon={faMap}
+                        size={18}
+                        color={theme.colors.onSurfaceVariant}
+                      />
+                    )}
+                  />
+                }
               />
               <HelperText type="error" visible={!!errors.state}>
                 {errors.state}
@@ -277,6 +392,18 @@ const ContactForm = ({ isVisible, onClose, onSubmit }: ContactFormProps) => {
             value={formData.postal_code}
             onChangeText={(text) => handleInputChange("postal_code", text)}
             error={!!errors.postal_code}
+            keyboardType="number-pad"
+            left={
+              <TextInput.Icon
+                icon={() => (
+                  <FontAwesomeIcon
+                    icon={faHashtag}
+                    size={18}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                )}
+              />
+            }
           />
           <HelperText type="error" visible={!!errors.postal_code}>
             {errors.postal_code}

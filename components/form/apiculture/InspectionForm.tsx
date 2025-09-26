@@ -1,4 +1,10 @@
 import { FormModal } from "@/components/modals/FormModal";
+import {
+  faCalendarAlt,
+  faChevronDown,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { format } from "date-fns";
 import React, { useCallback, useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, View } from "react-native";
@@ -23,6 +29,7 @@ const PaperFormDropdown = ({
   disabled = false,
 }: any) => {
   const [visible, setVisible] = useState(false);
+  const theme = useTheme();
   return (
     <View style={styles.inputContainer}>
       <Menu
@@ -39,7 +46,17 @@ const PaperFormDropdown = ({
               value={selectedValue}
               editable={false}
               pointerEvents="none"
-              right={<TextInput.Icon icon="menu-down" />}
+              right={
+                <TextInput.Icon
+                  icon={() => (
+                    <FontAwesomeIcon
+                      icon={faChevronDown}
+                      size={16}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  )}
+                />
+              }
               error={!!error}
               disabled={disabled}
             />
@@ -124,6 +141,7 @@ const InspectionForm = ({
   formTitle,
   inspectionToEdit,
 }: InspectionFormProps) => {
+  const theme = useTheme();
   const [formData, setFormData] = useState({
     inspection_date: format(new Date(), "yyyy-MM-dd"),
     queen_status: "",
@@ -295,7 +313,17 @@ const InspectionForm = ({
             label="Inspection Date"
             value={formData.inspection_date}
             onChangeText={(val) => handleInputChange("inspection_date", val)}
-            right={<TextInput.Icon icon="calendar" />}
+            right={
+              <TextInput.Icon
+                icon={() => (
+                  <FontAwesomeIcon
+                    icon={faCalendarAlt}
+                    size={18}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                )}
+              />
+            }
           />
           <View style={styles.row}>
             <PaperFormDropdown
@@ -311,7 +339,17 @@ const InspectionForm = ({
               onChangeText={(val) =>
                 handleInputChange("queen_introduced_date", val)
               }
-              right={<TextInput.Icon icon="calendar" />}
+              right={
+                <TextInput.Icon
+                  icon={() => (
+                    <FontAwesomeIcon
+                      icon={faCalendarAlt}
+                      size={18}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  )}
+                />
+              }
               style={styles.halfWidth}
             />
           </View>
@@ -415,6 +453,13 @@ const InspectionForm = ({
                   <Chip
                     key={symptom}
                     onClose={() => handleRemoveSymptom(symptom)}
+                    closeIcon={() => (
+                      <FontAwesomeIcon
+                        icon={faTimes}
+                        size={16}
+                        color={theme.colors.onSurfaceVariant}
+                      />
+                    )}
                     style={styles.chip}
                   >
                     {symptom}

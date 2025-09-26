@@ -4,12 +4,14 @@ import {
   faArrowLeft,
   faBuilding,
   faChevronDown,
+  faEllipsisV,
   faEnvelope,
   faGlobe,
   faIndustry,
   faMapMarkerAlt,
   faPhone,
   faSave,
+  faShareAlt,
   faTimes,
   faTrashAlt,
   faUser,
@@ -25,6 +27,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Share,
   StyleSheet,
   View,
 } from "react-native";
@@ -100,6 +103,7 @@ const CompanyDetails = () => {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [isTypeMenuVisible, setTypeMenuVisible] = useState(false);
+  const [isMoreMenuVisible, setMoreMenuVisible] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -205,6 +209,21 @@ const CompanyDetails = () => {
     );
   };
 
+  const handleShare = async () => {
+    if (!company) return;
+    try {
+      const message = `
+Company: ${formData.companyName}
+Contact: ${formData.contactPerson || "N/A"}
+Phone: ${formData.phoneNumber || "N/A"}
+Email: ${formData.email || "N/A"}
+    `.trim();
+      await Share.share({ message });
+    } catch (error) {
+      Alert.alert("Error", "Failed to share company.");
+    }
+  };
+
   const handleActionPress = (
     type: "tel" | "mailto" | "web",
     value?: string
@@ -260,6 +279,52 @@ const CompanyDetails = () => {
           onPress={() => router.back()}
         />
         <Appbar.Content title="Company Details" />
+        <Menu
+          visible={isMoreMenuVisible}
+          onDismiss={() => setMoreMenuVisible(false)}
+          anchor={
+            <Appbar.Action
+              icon={() => (
+                <FontAwesomeIcon
+                  icon={faEllipsisV}
+                  size={22}
+                  color={theme.colors.onSurface}
+                />
+              )}
+              onPress={() => setMoreMenuVisible(true)}
+            />
+          }
+        >
+          <Menu.Item
+            onPress={() => {
+              setMoreMenuVisible(false);
+              handleDelete();
+            }}
+            title="Delete Company"
+            leadingIcon={() => (
+              <FontAwesomeIcon
+                icon={faTrashAlt}
+                size={20}
+                color={theme.colors.error}
+              />
+            )}
+            titleStyle={{ color: theme.colors.error }}
+          />
+          <Menu.Item
+            onPress={() => {
+              setMoreMenuVisible(false);
+              handleShare();
+            }}
+            title="Share Company"
+            leadingIcon={() => (
+              <FontAwesomeIcon
+                icon={faShareAlt}
+                size={20}
+                color={theme.colors.onSurfaceVariant}
+              />
+            )}
+          />
+        </Menu>
       </Appbar.Header>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -343,25 +408,6 @@ const CompanyDetails = () => {
               disabled={!formData.website}
             >
               Website
-            </Button>
-            <Button
-              icon={() => (
-                <FontAwesomeIcon
-                  icon={faTrashAlt}
-                  size={18}
-                  color={
-                    deleting
-                      ? theme.colors.onSurfaceDisabled
-                      : theme.colors.error
-                  }
-                />
-              )}
-              onPress={handleDelete}
-              disabled={deleting}
-              loading={deleting}
-              textColor={theme.colors.error}
-            >
-              Delete
             </Button>
           </View>
           <Card style={styles.card}>

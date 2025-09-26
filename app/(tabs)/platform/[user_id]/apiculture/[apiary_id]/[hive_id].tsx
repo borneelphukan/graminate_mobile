@@ -1,3 +1,6 @@
+
+import BeeHiveIcon from "@/assets/icon/BeeHiveIcon";
+import BeeIcon from "@/assets/icon/BeeIcon";
 import HoneyProductionCard from "@/components/cards/apiculture/HoneyProductionCard";
 import HiveForm, { HiveFormData } from "@/components/form/apiculture/HiveForm";
 import InspectionForm, {
@@ -6,13 +9,15 @@ import InspectionForm, {
 import PlatformLayout from "@/components/layout/PlatformLayout";
 import axiosInstance from "@/lib/axiosInstance";
 import {
-  faBeer,
-  faBug,
+  faArrowLeft,
   faCalendarCheck,
   faChessQueen,
+  faEllipsisV,
   faJar,
   faNoteSticky,
+  faPen,
   faSeedling,
+  faTrashAlt,
   faTriangleExclamation,
   faUsers,
   faVial,
@@ -28,6 +33,7 @@ import {
   Button,
   Card,
   List,
+  Menu,
   SegmentedButtons,
   Text,
   useTheme,
@@ -56,6 +62,7 @@ const HiveDetailsPage = () => {
   const [activeView, setActiveView] = useState<HiveView>("status");
   const [inspectionToEdit, setInspectionToEdit] =
     useState<InspectionData | null>(null);
+  const [isMoreMenuVisible, setMoreMenuVisible] = useState(false);
 
   const fetchHiveDetails = useCallback(async () => {
     if (!numericHiveId) return;
@@ -140,12 +147,12 @@ const HiveDetailsPage = () => {
       {
         label: "Hive Type",
         value: hiveData.hive_type || "N/A",
-        icon: faBeer,
+        icon: BeeHiveIcon,
       },
       {
         label: "Bee Species",
         value: hiveData.bee_species || "N/A",
-        icon: faBug,
+        icon: BeeIcon,
       },
       {
         label: "Installation Date",
@@ -210,7 +217,7 @@ const HiveDetailsPage = () => {
       {
         label: "Brood Frames",
         value: String(latestInspection.frames_of_brood ?? "N/A"),
-        icon: faBug,
+        icon: BeeIcon,
       },
       {
         label: "Nectar/Honey Frames",
@@ -243,45 +250,92 @@ const HiveDetailsPage = () => {
   return (
     <PlatformLayout>
       <Appbar.Header>
-        <Appbar.BackAction onPress={() => router.back()} />
+        <Appbar.Action
+          icon={() => (
+            <FontAwesomeIcon
+              icon={faArrowLeft}
+              size={22}
+              color={theme.colors.onSurface}
+            />
+          )}
+          onPress={() => router.back()}
+        />
         <Appbar.Content title={hiveData?.hive_name || "Hive Details"} />
+        <Menu
+          visible={isMoreMenuVisible}
+          onDismiss={() => setMoreMenuVisible(false)}
+          anchor={
+            <Appbar.Action
+              icon={() => (
+                <FontAwesomeIcon
+                  icon={faEllipsisV}
+                  size={22}
+                  color={theme.colors.onSurface}
+                />
+              )}
+              onPress={() => setMoreMenuVisible(true)}
+            />
+          }
+        >
+          <Menu.Item
+            onPress={() => {
+              setShowHiveForm(true);
+              setMoreMenuVisible(false);
+            }}
+            title="Edit Hive"
+            leadingIcon={() => (
+              <FontAwesomeIcon
+                icon={faPen}
+                size={20}
+                color={theme.colors.onSurfaceVariant}
+              />
+            )}
+          />
+          <Menu.Item
+            onPress={() => {
+              handleDelete();
+              setMoreMenuVisible(false);
+            }}
+            title="Delete Hive"
+            leadingIcon={() => (
+              <FontAwesomeIcon
+                icon={faTrashAlt}
+                size={20}
+                color={theme.colors.error}
+              />
+            )}
+            titleStyle={{ color: theme.colors.error }}
+          />
+        </Menu>
       </Appbar.Header>
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.headerActions}>
-          <Button mode="outlined" onPress={() => setShowHiveForm(true)}>
-            Edit Hive
-          </Button>
-          <Button
-            mode="contained-tonal"
-            buttonColor={theme.colors.errorContainer}
-            textColor={theme.colors.onErrorContainer}
-            onPress={handleDelete}
-          >
-            Delete Hive
-          </Button>
-        </View>
-
         <Card style={styles.card}>
           <Card.Title title="Hive Information" />
-          <Card.Content style={styles.detailsGrid}>
-            {detailItems.map((item) => (
-              <List.Item
-                key={item.label}
-                title={item.value}
-                description={item.label}
-                left={(props) => (
-                  <View {...props} style={styles.iconContainer}>
-                    <FontAwesomeIcon
-                      icon={item.icon}
-                      size={24}
-                      color={theme.colors.onSurfaceVariant}
-                    />
-                  </View>
-                )}
-                style={styles.detailItem}
-                titleNumberOfLines={3}
-              />
-            ))}
+          <Card.Content>
+            {detailItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <List.Item
+                  key={item.label}
+                  title={item.label}
+                  description={item.value}
+                  left={(props) => (
+                    <View {...props} style={styles.iconContainer}>
+                      {typeof Icon === "function" ? (
+                        <Icon size={24} color={theme.colors.onSurfaceVariant} />
+                      ) : (
+                        <FontAwesomeIcon
+                          icon={Icon}
+                          size={24}
+                          color={theme.colors.onSurfaceVariant}
+                        />
+                      )}
+                    </View>
+                  )}
+                  descriptionNumberOfLines={3}
+                />
+              );
+            })}
           </Card.Content>
         </Card>
 
@@ -308,25 +362,34 @@ const HiveDetailsPage = () => {
               style={styles.segmentedButtons}
             />
             {activeView === "status" && (
-              <View style={styles.detailsGrid}>
-                {statusItems.map((item) => (
-                  <List.Item
-                    key={item.label}
-                    title={item.value}
-                    description={item.label}
-                    left={(props) => (
-                      <View {...props} style={styles.iconContainer}>
-                        <FontAwesomeIcon
-                          icon={item.icon}
-                          size={24}
-                          color={theme.colors.onSurfaceVariant}
-                        />
-                      </View>
-                    )}
-                    style={styles.detailItem}
-                    titleNumberOfLines={3}
-                  />
-                ))}
+              <View>
+                {statusItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <List.Item
+                      key={item.label}
+                      title={item.label}
+                      description={item.value}
+                      left={(props) => (
+                        <View {...props} style={styles.iconContainer}>
+                          {typeof Icon === "function" ? (
+                            <Icon
+                              size={24}
+                              color={theme.colors.onSurfaceVariant}
+                            />
+                          ) : (
+                            <FontAwesomeIcon
+                              icon={Icon}
+                              size={24}
+                              color={theme.colors.onSurfaceVariant}
+                            />
+                          )}
+                        </View>
+                      )}
+                      descriptionNumberOfLines={3}
+                    />
+                  );
+                })}
               </View>
             )}
             {activeView === "inspection" &&
@@ -399,15 +462,7 @@ const HiveDetailsPage = () => {
 const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   container: { padding: 16, gap: 24 },
-  headerActions: {
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 16,
-    justifyContent: "flex-end",
-  },
   card: {},
-  detailsGrid: { flexDirection: "row", flexWrap: "wrap" },
-  detailItem: { width: "50%" },
   iconContainer: {
     justifyContent: "center",
     alignItems: "center",

@@ -5,9 +5,11 @@ import HiveForm, { HiveFormData } from "@/components/form/apiculture/HiveForm";
 import PlatformLayout from "@/components/layout/PlatformLayout";
 import axiosInstance from "@/lib/axiosInstance";
 import {
+  faArrowLeft,
   faBeer,
   faCalendarDays,
   faMapMarkerAlt,
+  faPlus,
   faVectorSquare,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -197,14 +199,30 @@ const ApicultureDetailPage = () => {
   return (
     <PlatformLayout>
       <Appbar.Header>
-        <Appbar.BackAction
+        <Appbar.Action
+          icon={() => (
+            <FontAwesomeIcon
+              icon={faArrowLeft}
+              size={22}
+              color={theme.colors.onSurface}
+            />
+          )}
           onPress={() => router.push(`/platform/${user_id}/apiculture`)}
         />
         <Appbar.Content title={apiaryData?.apiary_name || "Bee Yard Details"} />
-        <Appbar.Action
-          icon="plus-circle-outline"
+        <Button
           onPress={() => setShowHiveForm(true)}
-        />
+          textColor={theme.colors.primary}
+          icon={() => (
+            <FontAwesomeIcon
+              icon={faPlus}
+              size={18}
+              color={theme.colors.primary}
+            />
+          )}
+        >
+          New Hive
+        </Button>
       </Appbar.Header>
       <ScrollView style={{ backgroundColor: theme.colors.background }}>
         <View style={styles.container}>

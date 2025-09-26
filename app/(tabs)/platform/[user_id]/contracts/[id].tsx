@@ -5,10 +5,12 @@ import {
   faCalendarAlt,
   faChartLine,
   faChevronDown,
+  faEllipsisV,
   faExclamationTriangle,
   faFileSignature,
   faIndianRupeeSign,
   faSave,
+  faShareAlt,
   faTags,
   faTimes,
   faTrashAlt,
@@ -24,6 +26,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Share,
   StyleSheet,
   View,
 } from "react-native";
@@ -35,7 +38,6 @@ import {
   Menu,
   Modal,
   Portal,
-  Text,
   TextInput,
   TouchableRipple,
   useTheme,
@@ -104,6 +106,7 @@ const ContractDetails = () => {
   const [datePickerFor, setDatePickerFor] = useState<
     "startDate" | "endDate" | null
   >(null);
+  const [isMoreMenuVisible, setMoreMenuVisible] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -227,6 +230,21 @@ const ContractDetails = () => {
     );
   };
 
+  const handleShare = async () => {
+    if (!contract) return;
+    try {
+      const message = `
+Contract: ${formData.dealName}
+Partner: ${formData.partner || "N/A"}
+Amount: ₹${formData.amount || "0"}
+Stage: ${formData.stage || "N/A"}
+    `.trim();
+      await Share.share({ message });
+    } catch (error) {
+      Alert.alert("Error", "Failed to share contract.");
+    }
+  };
+
   if (!contract) {
     return (
       <PlatformLayout>
@@ -264,23 +282,52 @@ const ContractDetails = () => {
           onPress={() => router.back()}
         />
         <Appbar.Content title={formData.dealName || "Contract Details"} />
-        <Button
-          onPress={handleDelete}
-          textColor={theme.colors.error}
-          disabled={deleting}
-          loading={deleting}
-          icon={() => (
-            <FontAwesomeIcon
-              icon={faTrashAlt}
-              size={18}
-              color={
-                deleting ? theme.colors.onSurfaceDisabled : theme.colors.error
-              }
+        <Menu
+          visible={isMoreMenuVisible}
+          onDismiss={() => setMoreMenuVisible(false)}
+          anchor={
+            <Appbar.Action
+              icon={() => (
+                <FontAwesomeIcon
+                  icon={faEllipsisV}
+                  size={22}
+                  color={theme.colors.onSurface}
+                />
+              )}
+              onPress={() => setMoreMenuVisible(true)}
             />
-          )}
+          }
         >
-          Delete
-        </Button>
+          <Menu.Item
+            onPress={() => {
+              setMoreMenuVisible(false);
+              handleDelete();
+            }}
+            title="Delete Contract"
+            leadingIcon={() => (
+              <FontAwesomeIcon
+                icon={faTrashAlt}
+                size={20}
+                color={theme.colors.error}
+              />
+            )}
+            titleStyle={{ color: theme.colors.error }}
+          />
+          <Menu.Item
+            onPress={() => {
+              setMoreMenuVisible(false);
+              handleShare();
+            }}
+            title="Share Contract"
+            leadingIcon={() => (
+              <FontAwesomeIcon
+                icon={faShareAlt}
+                size={20}
+                color={theme.colors.onSurfaceVariant}
+              />
+            )}
+          />
+        </Menu>
       </Appbar.Header>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
