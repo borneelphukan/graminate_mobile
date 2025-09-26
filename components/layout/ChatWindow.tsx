@@ -1,7 +1,6 @@
 import Sparkles from "@/assets/icon/Sparkles";
 import {
   faCircleArrowUp,
-  faRobot,
   faTimesCircle,
   faTrashAlt,
   faUser,
@@ -279,8 +278,7 @@ const ChatWindow = ({ userId, onClose }: ChatWindowProps) => {
                 >
                   {msg.sender === "bot" && (
                     <View style={styles.avatarContainer}>
-                      <FontAwesomeIcon
-                        icon={faRobot}
+                      <Sparkles
                         size={18}
                         color={theme.colors.onSurfaceVariant}
                       />
@@ -313,11 +311,7 @@ const ChatWindow = ({ userId, onClose }: ChatWindowProps) => {
               {isLoading && (
                 <View style={[styles.messageRow, styles.botRow]}>
                   <View style={styles.avatarContainer}>
-                    <FontAwesomeIcon
-                      icon={faRobot}
-                      size={18}
-                      color={theme.colors.onSurfaceVariant}
-                    />
+                    <Sparkles size={18} color={theme.colors.onSurfaceVariant} />
                   </View>
                   <Surface
                     style={[

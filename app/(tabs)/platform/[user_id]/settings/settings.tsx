@@ -1,4 +1,4 @@
-import BeeIcon from "@/assets/icon/BeeIcon"; // 1. Import BeeIcon
+import BeeIcon from "@/assets/icon/BeeIcon";
 import PlatformLayout from "@/components/layout/PlatformLayout";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import {
@@ -15,8 +15,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useMemo } from "react"; // Make sure React is imported
-import { ScrollView, StyleSheet, View } from "react-native";
+import React, { useEffect, useMemo } from "react";
+import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
@@ -25,7 +25,6 @@ import {
   useTheme,
 } from "react-native-paper";
 
-// 2. Update the type to be flexible
 type SettingsItem = {
   label: string;
   type: "navigate";
@@ -94,7 +93,7 @@ const SettingsScreen = () => {
             label: "Apiculture",
             type: "navigate",
             routeName: `/platform/${user_id}/settings/apiculture`,
-            icon: BeeIcon, // 3. Replace faBug with BeeIcon
+            icon: BeeIcon,
           });
       }
     }
@@ -122,74 +121,79 @@ const SettingsScreen = () => {
 
   return (
     <PlatformLayout>
-      <Appbar.Header>
-        <Appbar.Action
-          icon={() => (
-            <FontAwesomeIcon
-              icon={faArrowLeft}
-              size={22}
-              color={theme.colors.onSurface}
-            />
-          )}
-          onPress={() => router.back()}
-        />
-        <Appbar.Content title="Settings" />
-      </Appbar.Header>
-      <View style={[styles.flex, { backgroundColor: theme.colors.background }]}>
-        {isLoading ? (
-          <View style={styles.centeredContainer}>
-            <ActivityIndicator size="large" />
-          </View>
-        ) : (
-          <ScrollView contentContainerStyle={styles.container}>
-            {settingsMenu.map((section) => (
-              <Card key={section.label} style={styles.card}>
-                <List.Subheader>{section.label}</List.Subheader>
-                {section.items.map((item) => (
-                  <List.Item
-                    key={item.label}
-                    title={item.label}
-                    onPress={() =>
-                      item.routeName && router.push(item.routeName as any)
-                    }
-                    // 4. Implement conditional rendering logic
-                    left={(props) => {
-                      let iconElement;
-                      if (typeof item.icon === "function") {
-                        const CustomIcon = item.icon;
-                        iconElement = (
-                          <CustomIcon size={22} color={props.color} />
-                        );
-                      } else {
-                        iconElement = (
-                          <FontAwesomeIcon
-                            icon={item.icon}
-                            size={22}
-                            color={props.color}
-                          />
-                        );
+      <SafeAreaView
+        style={[styles.flex, { backgroundColor: theme.colors.background }]}
+      >
+        <Appbar.Header>
+          <Appbar.Action
+            icon={() => (
+              <FontAwesomeIcon
+                icon={faArrowLeft}
+                size={22}
+                color={theme.colors.onSurface}
+              />
+            )}
+            onPress={() => router.back()}
+          />
+          <Appbar.Content title="Settings" />
+        </Appbar.Header>
+        <View style={styles.flex}>
+          {isLoading ? (
+            <View style={styles.centeredContainer}>
+              <ActivityIndicator size="large" />
+            </View>
+          ) : (
+            <ScrollView contentContainerStyle={styles.container}>
+              {settingsMenu.map((section) => (
+                <Card key={section.label} style={styles.card}>
+                  <List.Subheader>{section.label}</List.Subheader>
+                  {section.items.map((item) => (
+                    <List.Item
+                      key={item.label}
+                      title={item.label}
+                      onPress={() =>
+                        item.routeName && router.push(item.routeName as any)
                       }
-                      return <List.Icon {...props} icon={() => iconElement} />;
-                    }}
-                    right={(props) => (
-                      <List.Icon
-                        {...props}
-                        icon={() => (
-                          <FontAwesomeIcon
-                            icon={faChevronRight}
-                            size={16}
-                            color={props.color}
-                          />
-                        )}
-                      />
-                    )}
-                  />
-                ))}
-              </Card>
-            ))}
-          </ScrollView>
-        )}
-      </View>
+                      left={(props) => {
+                        let iconElement;
+                        if (typeof item.icon === "function") {
+                          const CustomIcon = item.icon;
+                          iconElement = (
+                            <CustomIcon size={22} color={props.color} />
+                          );
+                        } else {
+                          iconElement = (
+                            <FontAwesomeIcon
+                              icon={item.icon}
+                              size={22}
+                              color={props.color}
+                            />
+                          );
+                        }
+                        return (
+                          <List.Icon {...props} icon={() => iconElement} />
+                        );
+                      }}
+                      right={(props) => (
+                        <List.Icon
+                          {...props}
+                          icon={() => (
+                            <FontAwesomeIcon
+                              icon={faChevronRight}
+                              size={16}
+                              color={props.color}
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  ))}
+                </Card>
+              ))}
+            </ScrollView>
+          )}
+        </View>
+      </SafeAreaView>
     </PlatformLayout>
   );
 };

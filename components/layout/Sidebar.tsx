@@ -374,7 +374,10 @@ const Sidebar = ({ closeSidebar, userId }: SidebarProps) => {
                 <FontAwesomeIcon icon={faMoon} size={20} color={iconColor} />
               </View>
               <Text
-                style={[styles.itemText, { color: theme.colors.onSurface }]}
+                style={[
+                  styles.itemText,
+                  { color: theme.colors.onSurface, flex: 0 },
+                ]}
               >
                 Dark Mode
               </Text>

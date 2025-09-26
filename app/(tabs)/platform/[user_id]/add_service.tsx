@@ -1,12 +1,12 @@
+import BeeIcon from "@/assets/icon/BeeIcon";
 import PlatformLayout from "@/components/layout/PlatformLayout";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import {
-  faBug,
   faCow,
+  faEgg,
   faEye,
   faEyeSlash,
   faFish,
-  faKiwiBird,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
@@ -53,11 +53,14 @@ const SERVICE_CONFIG: ServiceConfig = {
   Apiculture: { endpoint: "apiculture", occupation: "Apiculture" },
 };
 
-const AgricultureIcons: Record<string, IconDefinition> = {
+const AgricultureIcons: Record<
+  string,
+  IconDefinition | React.ComponentType<any>
+> = {
   Fishery: faFish,
-  Poultry: faKiwiBird,
+  Poultry: faEgg,
   "Cattle Rearing": faCow,
-  Apiculture: faBug,
+  Apiculture: BeeIcon,
 };
 
 const AddServiceScreen = () => {
@@ -264,47 +267,55 @@ const AddServiceScreen = () => {
     subType: string,
     isSelected: boolean,
     onPress: () => void
-  ) => (
-    <View key={subType} style={styles.cardWrapper}>
-      <TouchableRipple
-        onPress={onPress}
-        style={[styles.cardRipple, { borderRadius: theme.roundness }]}
-      >
-        <Card
-          style={[
-            styles.card,
-            isSelected && { backgroundColor: theme.colors.primaryContainer },
-          ]}
-        >
-          <Card.Content style={styles.cardContent}>
-            <FontAwesomeIcon
-              icon={AgricultureIcons[subType]}
-              size={30}
-              color={
-                isSelected
-                  ? theme.colors.primary
-                  : theme.colors.onSurfaceVariant
-              }
-            />
-            <Text
-              variant="labelLarge"
-              style={[
-                styles.cardText,
-                {
-                  color: isSelected
-                    ? theme.colors.primary
-                    : theme.colors.onSurface,
-                },
-              ]}
-            >
-              {subType}
-            </Text>
-          </Card.Content>
-        </Card>
-      </TouchableRipple>
-    </View>
-  );
+  ) => {
+    const IconComponent = AgricultureIcons[subType];
+    const iconColor = isSelected
+      ? theme.colors.primary
+      : theme.colors.onSurfaceVariant;
+    const iconSize = 30;
 
+    return (
+      <View key={subType} style={styles.cardWrapper}>
+        <TouchableRipple
+          onPress={onPress}
+          style={[styles.cardRipple, { borderRadius: theme.roundness }]}
+        >
+          <Card
+            style={[
+              styles.card,
+              isSelected && { backgroundColor: theme.colors.primaryContainer },
+            ]}
+          >
+            <Card.Content style={styles.cardContent}>
+              {/* Conditionally render FontAwesomeIcon or a custom component */}
+              {typeof IconComponent === "function" ? (
+                <IconComponent size={iconSize} color={iconColor} />
+              ) : (
+                <FontAwesomeIcon
+                  icon={IconComponent}
+                  size={iconSize}
+                  color={iconColor}
+                />
+              )}
+              <Text
+                variant="labelLarge"
+                style={[
+                  styles.cardText,
+                  {
+                    color: isSelected
+                      ? theme.colors.primary
+                      : theme.colors.onSurface,
+                  },
+                ]}
+              >
+                {subType}
+              </Text>
+            </Card.Content>
+          </Card>
+        </TouchableRipple>
+      </View>
+    );
+  };
   const servicesToShow = availableSubTypes.filter(
     (subType) => !subTypes.includes(subType)
   );

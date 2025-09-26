@@ -28,9 +28,10 @@ axiosInstance.interceptors.request.use(async (config) => {
 
 type Props = {
   children: React.ReactNode;
+  showNavbar?: boolean;
 };
 
-const PlatformLayout = ({ children }: Props) => {
+const PlatformLayout = ({ children, showNavbar = true }: Props) => {
   const router = useRouter();
   const { user_id } = useLocalSearchParams<{ user_id: string }>();
   const theme = useTheme();
@@ -117,13 +118,16 @@ const PlatformLayout = ({ children }: Props) => {
 
   return (
     <SafeAreaView
+      edges={["bottom", "left", "right"]}
       style={[styles.flex, { backgroundColor: theme.colors.background }]}
     >
       <View style={styles.flex}>
-        <Navbar
-          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          toggleChat={() => setIsChatOpen(true)}
-        />
+        {showNavbar && (
+          <Navbar
+            toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+            toggleChat={() => setIsChatOpen(true)}
+          />
+        )}
         <View style={styles.flex}>{children}</View>
         {isSidebarRendered && (
           <>

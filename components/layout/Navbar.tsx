@@ -30,7 +30,6 @@ type User = {
   name: string;
   email: string;
   business?: string;
-  imageUrl?: string;
 };
 
 type Notification = {
@@ -70,11 +69,6 @@ const Navbar = ({ toggleSidebar, toggleChat }: NavbarProps) => {
             name: `${data.first_name} ${data.last_name}`,
             email: data.email,
             business: data.business_name,
-            imageUrl: `https://eu.ui-avatars.com/api/?name=${encodeURIComponent(
-              data.first_name
-            )}+${encodeURIComponent(
-              data.last_name
-            )}&size=250&background=random`,
           });
         }
       } catch (error) {
@@ -89,6 +83,16 @@ const Navbar = ({ toggleSidebar, toggleChat }: NavbarProps) => {
     setTimeout(() => {
       router.push(`/(tabs)/platform/${user_id}/settings/settings`);
     }, 300);
+  };
+
+  const getInitials = (name: string) => {
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
   };
 
   const iconColor = theme.colors.onSurface;
@@ -132,8 +136,8 @@ const Navbar = ({ toggleSidebar, toggleChat }: NavbarProps) => {
           style={styles.avatarTouchable}
           borderless
         >
-          {user.imageUrl ? (
-            <Avatar.Image size={32} source={{ uri: user.imageUrl }} />
+          {user.name ? (
+            <Avatar.Text size={32} label={getInitials(user.name)} />
           ) : (
             <Avatar.Icon size={32} icon="account" />
           )}

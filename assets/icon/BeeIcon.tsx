@@ -1,13 +1,14 @@
 import React from "react";
+import Svg, { Path, SvgProps } from "react-native-svg";
 
-type BeeIconProps = React.SVGProps<SVGSVGElement> & {
+type BeeIconProps = SvgProps & {
   size?: number;
-  color?: any;
+  color?: string;
 };
 
 const BeeIcon = ({ size = 24, color = "black", ...props }: BeeIconProps) => (
-  <svg width={size} height={size} viewBox="0 0 297 297" fill={color} {...props}>
-    <path
+  <Svg width={size} height={size} viewBox="0 0 297 297" fill={color} {...props}>
+    <Path
       d="M262.223,87.121c-21.74-21.739-48.581-34.722-71.809-34.735c-0.373-4.733-1.523-9.251-3.337-13.418
       c0.21-0.178,0.419-0.359,0.617-0.558l16.139-16.139c3.82-3.82,3.82-10.013,0-13.833c-3.821-3.819-10.012-3.819-13.833,0
       l-14.795,14.795c-7.268-5.989-16.574-9.59-26.705-9.59c-10.131,0-19.436,3.601-26.705,9.59L107,8.439
@@ -31,7 +32,7 @@ const BeeIcon = ({ size = 24, color = "black", ...props }: BeeIconProps) => (
       c-4.447,4.447-10.816,6.703-18.931,6.702c-17.892,0-40.12-11.114-58.011-29.005c-26.898-26.898-37.112-62.133-22.303-76.942
       c4.447-4.447,10.816-6.702,18.932-6.702c17.891,0,40.119,11.114,58.01,29.006C275.288,127.852,285.501,163.086,270.693,177.895z"
     />
-  </svg>
+  </Svg>
 );
 
 export default BeeIcon;
