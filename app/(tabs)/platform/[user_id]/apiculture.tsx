@@ -5,6 +5,18 @@ import ApicultureForm, {
   ApiaryFormData,
 } from "@/components/form/apiculture/ApicultureForm";
 import PlatformLayout from "@/components/layout/PlatformLayout";
+import {
+  faArrowLeft,
+  faCartArrowDown,
+  faChartPie,
+  faChevronDown,
+  faChevronUp,
+  faCreditCard,
+  faPiggyBank,
+  faPlus,
+  faSackDollar,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import axiosInstance from "@/lib/axiosInstance";
 import {
   addDays as addDaysDateFns,
@@ -191,13 +203,13 @@ const ApicultureScreen = () => {
 
   const processSalesData = useCallback(
     (sales: SaleRecord[]): Map<string, MetricBreakdown> => {
-      /* unchanged */ return new Map();
+    return new Map();
     },
     []
   );
   const processExpensesData = useCallback(
     (expenses: ExpenseRecord[]): Map<string, ProcessedExpensesForDay> => {
-      /* unchanged */ return new Map();
+     return new Map();
     },
     []
   );
@@ -305,35 +317,35 @@ const ApicultureScreen = () => {
       {
         title: "Apiculture Revenue",
         value: totals.revenue,
-        icon: "cash",
+        icon: faSackDollar,
         bgColor: isDark ? "#14532d" : "#dcfce7",
         iconValueColor: isDark ? "#86efac" : "#16a34a",
       },
       {
         title: "Apiculture COGS",
         value: totals.cogs,
-        icon: "cart-outline",
+        icon: faCartArrowDown,
         bgColor: isDark ? "#713f12" : "#fef3c7",
         iconValueColor: isDark ? "#fcd34d" : "#b45309",
       },
       {
         title: "Apiculture Gross Profit",
         value: grossProfit,
-        icon: "chart-pie",
+        icon: faChartPie,
         bgColor: isDark ? "#164e63" : "#cffafe",
         iconValueColor: isDark ? "#67e8f9" : "#0891b2",
       },
       {
         title: "Apiculture Expenses",
         value: totals.expenses,
-        icon: "credit-card-outline",
+        icon: faCreditCard,
         bgColor: isDark ? "#7f1d1d" : "#fee2e2",
         iconValueColor: isDark ? "#fca5a5" : "#b91c1c",
       },
       {
         title: "Apiculture Net Profit",
         value: netProfit,
-        icon: "piggy-bank-outline",
+        icon: faPiggyBank,
         bgColor: isDark ? "#1e3a8a" : "#dbeafe",
         iconValueColor: isDark ? "#93c5fd" : "#2563eb",
       },
@@ -350,6 +362,16 @@ const ApicultureScreen = () => {
   return (
     <PlatformLayout>
       <Appbar.Header>
+        <Appbar.Action
+          icon={() => (
+            <FontAwesomeIcon
+              icon={faArrowLeft}
+              size={22}
+              color={theme.colors.onSurface}
+            />
+          )}
+          onPress={() => router.back()}
+        />
         <Appbar.Content
           title="Apiculture"
           subtitle={
@@ -358,12 +380,27 @@ const ApicultureScreen = () => {
               : `${filteredApicultureRecords.length} Bee Yard(s)`
           }
         />
-        <Appbar.Action icon="plus" onPress={() => setIsFormVisible(true)} />
+        <Appbar.Action
+          icon={() => (
+            <FontAwesomeIcon
+              icon={faPlus}
+              size={22}
+              color={theme.colors.onSurface}
+            />
+          )}
+          onPress={() => setIsFormVisible(true)}
+        />
       </Appbar.Header>
       <ScrollView style={{ backgroundColor: theme.colors.background }}>
         <View style={styles.toggleContainer}>
           <Button
-            icon={showFinancials ? "chevron-up" : "chevron-down"}
+            icon={() => (
+              <FontAwesomeIcon
+                icon={showFinancials ? faChevronUp : faChevronDown}
+                size={16}
+                color={theme.colors.primary}
+              />
+            )}
             onPress={() => setShowFinancials(!showFinancials)}
           >
             {showFinancials ? "Hide Finances" : "Show Finances"}

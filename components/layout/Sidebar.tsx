@@ -273,11 +273,19 @@ const Sidebar = ({ closeSidebar, userId }: SidebarProps) => {
                       onPress={() => handleSectionToggle(section.section)}
                     >
                       <View style={styles.iconWrapper}>
-                        <FontAwesomeIcon
-                          icon={section.icon as IconDefinition}
-                          size={20}
-                          color={iconColor}
-                        />
+                        {typeof section.icon === "function" ? (
+                          <section.icon
+                            color={iconColor}
+                            width={22}
+                            height={22}
+                          />
+                        ) : (
+                          <FontAwesomeIcon
+                            icon={section.icon}
+                            size={20}
+                            color={iconColor}
+                          />
+                        )}
                       </View>
                       <Text
                         style={[

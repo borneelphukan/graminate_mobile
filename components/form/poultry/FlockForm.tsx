@@ -1,5 +1,17 @@
 import { FormModal } from "@/components/modals/FormModal";
 import { HOUSING_TYPES, POULTRY_TYPES } from "@/constants/options";
+import {
+  faChevronDown,
+  faClipboard,
+  faCrow,
+  faDna,
+  faHashtag,
+  faHouse,
+  faTag,
+  faTruck,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import React, { useEffect, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 import {
@@ -7,6 +19,7 @@ import {
   Menu,
   TextInput,
   TouchableRipple,
+  useTheme,
 } from "react-native-paper";
 
 const POULTRY_BREEDS_STRUCTURED = {
@@ -78,8 +91,20 @@ const PaperFormDropdown = ({
   error,
   disabled = false,
   placeholder,
-}: any) => {
+  leftIcon,
+}: {
+  label: string;
+  items: string[];
+  selectedValue: string;
+  onSelect: (value: string) => void;
+  error?: string;
+  disabled?: boolean;
+  placeholder?: string;
+  leftIcon?: IconDefinition;
+}) => {
   const [visible, setVisible] = useState(false);
+  const theme = useTheme();
+
   return (
     <View style={styles.inputContainerFull}>
       <Menu
@@ -90,17 +115,41 @@ const PaperFormDropdown = ({
             onPress={() => !disabled && setVisible(true)}
             disabled={disabled}
           >
-            <TextInput
-              mode="outlined"
-              label={label}
-              value={selectedValue}
-              placeholder={placeholder}
-              editable={false}
-              pointerEvents="none"
-              right={<TextInput.Icon icon="menu-down" />}
-              error={!!error}
-              disabled={disabled}
-            />
+            <View pointerEvents="none">
+              <TextInput
+                mode="outlined"
+                label={label}
+                value={selectedValue}
+                placeholder={placeholder}
+                editable={false}
+                left={
+                  leftIcon && (
+                    <TextInput.Icon
+                      icon={() => (
+                        <FontAwesomeIcon
+                          icon={leftIcon}
+                          size={18}
+                          color={theme.colors.onSurfaceVariant}
+                        />
+                      )}
+                    />
+                  )
+                }
+                right={
+                  <TextInput.Icon
+                    icon={() => (
+                      <FontAwesomeIcon
+                        icon={faChevronDown}
+                        size={16}
+                        color={theme.colors.onSurfaceVariant}
+                      />
+                    )}
+                  />
+                }
+                error={!!error}
+                disabled={disabled}
+              />
+            </View>
           </TouchableRipple>
         }
       >
@@ -128,6 +177,7 @@ const FlockForm = ({
   onSubmit,
   flockToEdit,
 }: FlockFormProps) => {
+  const theme = useTheme();
   const [formData, setFormData] = useState<FlockFormData>({
     flock_name: "",
     flock_type: "",
@@ -246,6 +296,17 @@ const FlockForm = ({
           value={formData.flock_name}
           onChangeText={(text) => handleInputChange("flock_name", text)}
           error={!!errors.flock_name}
+          left={
+            <TextInput.Icon
+              icon={() => (
+                <FontAwesomeIcon
+                  icon={faTag}
+                  size={18}
+                  color={theme.colors.onSurfaceVariant}
+                />
+              )}
+            />
+          }
         />
         <HelperText type="error" visible={!!errors.flock_name}>
           {errors.flock_name}
@@ -260,6 +321,7 @@ const FlockForm = ({
             handleInputChange("breed", "");
           }}
           error={errors.flock_type}
+          leftIcon={faCrow}
         />
         <PaperFormDropdown
           label="Breed (Optional)"
@@ -270,6 +332,7 @@ const FlockForm = ({
           placeholder={
             !formData.flock_type ? "Select Flock Type First" : "Select Breed"
           }
+          leftIcon={faDna}
         />
         <View style={styles.row}>
           <View style={styles.halfWidth}>
@@ -283,6 +346,17 @@ const FlockForm = ({
               }
               error={!!errors.quantity}
               keyboardType="number-pad"
+              left={
+                <TextInput.Icon
+                  icon={() => (
+                    <FontAwesomeIcon
+                      icon={faHashtag}
+                      size={18}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  )}
+                />
+              }
             />
             <HelperText type="error" visible={!!errors.quantity}>
               {errors.quantity}
@@ -295,6 +369,17 @@ const FlockForm = ({
               placeholder="e.g. Local Hatchery"
               value={formData.source}
               onChangeText={(text) => handleInputChange("source", text)}
+              left={
+                <TextInput.Icon
+                  icon={() => (
+                    <FontAwesomeIcon
+                      icon={faTruck}
+                      size={18}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  )}
+                />
+              }
             />
           </View>
         </View>
@@ -304,6 +389,7 @@ const FlockForm = ({
           items={HOUSING_TYPES.map((h) => h.name)}
           selectedValue={formData.housing_type}
           onSelect={(value: string) => handleInputChange("housing_type", value)}
+          leftIcon={faHouse}
         />
         <TextInput
           mode="outlined"
@@ -313,6 +399,17 @@ const FlockForm = ({
           onChangeText={(text) => handleInputChange("notes", text)}
           multiline
           numberOfLines={4}
+          left={
+            <TextInput.Icon
+              icon={() => (
+                <FontAwesomeIcon
+                  icon={faClipboard}
+                  size={18}
+                  color={theme.colors.onSurfaceVariant}
+                />
+              )}
+            />
+          }
         />
       </View>
     </FormModal>

@@ -1,23 +1,19 @@
-
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import React, { useCallback, useEffect, useState } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
-  Card,
   Chip,
-  Icon,
-  IconButton,
   Text,
+  TouchableRipple,
   useTheme,
 } from "react-native-paper";
 import axiosInstance from "@/lib/axiosInstance";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import {
+  faBoxArchive,
+  faChevronDown,
+  faChevronUp,
+} from "@fortawesome/free-solid-svg-icons";
 
 type ItemRecord = {
   inventory_id: number;
@@ -33,8 +29,6 @@ type InventoryStockProps = {
   category: string;
 };
 
-const ITEMS_PER_PAGE = 5;
-
 const InventoryStockCard = ({
   userId,
   title,
@@ -44,9 +38,13 @@ const InventoryStockCard = ({
   const [inventoryItems, setInventoryItems] = useState<ItemRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [containerWidth, setContainerWidth] = useState(0);
-  const translateX = useSharedValue(0);
+  const [quantitySortAsc, setQuantitySortAsc] = useState(false);
+
+  const sortItems = useCallback((list: ItemRecord[], asc: boolean) => {
+    return [...list].sort((a, b) => {
+      return asc ? a.quantity - b.quantity : b.quantity - a.quantity;
+    });
+  }, []);
 
   useEffect(() => {
     if (!userId || !category) {
@@ -57,12 +55,12 @@ const InventoryStockCard = ({
     const fetchInventoryItems = async () => {
       setLoading(true);
       setError(null);
-      setCurrentPage(0);
       try {
         const response = await axiosInstance.get(`/inventory/${userId}`, {
           params: { item_group: category },
         });
-        setInventoryItems(response.data.items || []);
+        const items = response.data.items || [];
+        setInventoryItems(sortItems(items, quantitySortAsc));
       } catch (err) {
         setError(`Failed to load ${category.toLowerCase()} inventory data.`);
       } finally {
@@ -70,62 +68,7 @@ const InventoryStockCard = ({
       }
     };
     fetchInventoryItems();
-  }, [userId, category]);
-
-  const { pages, totalPages } = useMemo(() => {
-    if (inventoryItems.length === 0) return { pages: [], totalPages: 0 };
-    const chunks: ItemRecord[][] = [];
-    for (let i = 0; i < inventoryItems.length; i += ITEMS_PER_PAGE) {
-      chunks.push(inventoryItems.slice(i, i + ITEMS_PER_PAGE));
-    }
-    return { pages: chunks, totalPages: chunks.length };
-  }, [inventoryItems]);
-
-  useEffect(() => {
-    if (containerWidth > 0) {
-      translateX.value = withTiming(-currentPage * containerWidth, {
-        duration: 250,
-      });
-    }
-  }, [currentPage, containerWidth, translateX]);
-
-  useEffect(() => {
-    setCurrentPage(0);
-  }, [inventoryItems.length]);
-
-  const panGesture = Gesture.Pan()
-    .activeOffsetX([-20, 20])
-    .onUpdate((event) => {
-      translateX.value = -currentPage * containerWidth + event.translationX;
-    })
-    .onEnd((event) => {
-      const { translationX, velocityX } = event;
-      const threshold = containerWidth / 4;
-      let nextPage = currentPage;
-      if (translationX < -threshold || velocityX < -500) {
-        nextPage = Math.min(currentPage + 1, totalPages - 1);
-      } else if (translationX > threshold || velocityX > 500) {
-        nextPage = Math.max(currentPage - 1, 0);
-      }
-      if (nextPage !== currentPage) {
-        runOnJS(setCurrentPage)(nextPage);
-      } else {
-        translateX.value = withTiming(-currentPage * containerWidth, {
-          duration: 200,
-        });
-      }
-    });
-
-  const listAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
-
-  const goToNextPage = useCallback(() => {
-    if (currentPage < totalPages - 1) setCurrentPage(currentPage + 1);
-  }, [currentPage, totalPages]);
-  const goToPreviousPage = useCallback(() => {
-    if (currentPage > 0) setCurrentPage(currentPage - 1);
-  }, [currentPage]);
+  }, [userId, category, quantitySortAsc, sortItems]);
 
   const getItemStatus = (item: ItemRecord) => {
     const { quantity, minimum_limit } = item;
@@ -149,122 +92,172 @@ const InventoryStockCard = ({
     };
   };
 
-  const renderItem = ({ item }: { item: ItemRecord }) => {
-    const status = getItemStatus(item);
-    return (
-      <View style={styles.itemRow}>
-        <Text variant="bodyMedium" style={styles.itemName} numberOfLines={1}>
-          {item.item_name}
-        </Text>
-        <View style={styles.itemDetails}>
-          <Text variant="bodyMedium" style={styles.itemQuantity}>
-            {item.quantity} {item.units}
-          </Text>
-          <Chip
-            textStyle={{ color: status.text_color }}
-            style={{ backgroundColor: status.bg }}
-          >
-            {status.text}
-          </Chip>
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <View style={styles.centeredContainer}>
+          <ActivityIndicator animating={true} />
         </View>
-      </View>
+      );
+    }
+
+    if (error) {
+      return (
+        <View style={styles.centeredContainer}>
+          <Text style={{ color: theme.colors.error }}>{error}</Text>
+        </View>
+      );
+    }
+
+    if (inventoryItems.length === 0) {
+      return (
+        <View style={styles.centeredContainer}>
+          <FontAwesomeIcon
+            icon={faBoxArchive}
+            size={48}
+            color={theme.colors.onSurfaceDisabled}
+          />
+          <Text
+            style={[
+              styles.emptyText,
+              { color: theme.colors.onSurfaceDisabled },
+            ]}
+          >
+            No items for {category}.
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <ScrollView style={styles.itemList} showsVerticalScrollIndicator={false}>
+        {inventoryItems.map((item) => {
+          const status = getItemStatus(item);
+          return (
+            <View key={item.inventory_id} style={styles.itemRow}>
+              <Text
+                style={[styles.itemText, { color: theme.colors.onSurface }]}
+                numberOfLines={1}
+              >
+                {item.item_name}
+              </Text>
+              <Text style={styles.itemQuantity}>
+                {item.quantity} {item.units}
+              </Text>
+              <Chip
+                textStyle={{ color: status.text_color }}
+                style={{ backgroundColor: status.bg }}
+              >
+                {status.text}
+              </Chip>
+            </View>
+          );
+        })}
+      </ScrollView>
     );
   };
 
   return (
-    <Card style={styles.card}>
-      <Card.Title title={title} titleVariant="titleLarge" />
-      <Card.Content style={styles.content}>
-        <View style={styles.listSection}>
-          <IconButton
-            icon="chevron-left"
-            onPress={goToPreviousPage}
-            disabled={currentPage <= 0}
-          />
-          <View
-            style={styles.listContainer}
-            onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
-          >
-            {loading ? (
-              <ActivityIndicator />
-            ) : error ? (
-              <Text style={{ color: theme.colors.error }}>{error}</Text>
-            ) : inventoryItems.length === 0 ? (
-              <View style={styles.centered}>
-                <Icon
-                  source="package-variant-closed"
-                  size={48}
-                  color={theme.colors.onSurfaceDisabled}
-                />
-                <Text style={{ color: theme.colors.onSurfaceDisabled }}>
-                  No {category.toLowerCase()} items found.
-                </Text>
-              </View>
-            ) : (
-              <GestureDetector gesture={panGesture}>
-                <View style={styles.listGestureView}>
-                  <Animated.View
-                    style={[
-                      styles.animatedList,
-                      { width: containerWidth * totalPages },
-                      listAnimatedStyle,
-                    ]}
-                  >
-                    {pages.map((pageData, index) => (
-                      <View key={index} style={{ width: containerWidth }}>
-                        <FlatList
-                          data={pageData}
-                          renderItem={renderItem}
-                          keyExtractor={(item) => item.inventory_id.toString()}
-                          contentContainerStyle={styles.flatlistContent}
-                          scrollEnabled={false}
-                        />
-                      </View>
-                    ))}
-                  </Animated.View>
-                </View>
-              </GestureDetector>
-            )}
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.colors.surface,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 5,
+        },
+      ]}
+    >
+      <View style={styles.header}>
+        <Text variant="headlineSmall" style={{ color: theme.colors.onSurface }}>
+          {title}
+        </Text>
+        <TouchableRipple
+          onPress={() => {
+            const newAsc = !quantitySortAsc;
+            setQuantitySortAsc(newAsc);
+            setInventoryItems((prev) => sortItems(prev, newAsc));
+          }}
+          style={styles.sortButton}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text
+              style={[styles.sortButtonText, { color: theme.colors.onSurface }]}
+            >
+              Quantity
+            </Text>
+            <FontAwesomeIcon
+              icon={quantitySortAsc ? faChevronUp : faChevronDown}
+              size={12}
+              color={theme.colors.onSurface}
+            />
           </View>
-          <IconButton
-            icon="chevron-right"
-            onPress={goToNextPage}
-            disabled={currentPage >= totalPages - 1}
-          />
-        </View>
-      </Card.Content>
-    </Card>
+        </TouchableRipple>
+      </View>
+
+      <View style={styles.listContainer}>{renderContent()}</View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  card: { flex: 1 },
-  content: { flex: 1, paddingHorizontal: 0 },
-  listSection: { flexDirection: "row", alignItems: "center", flex: 1 },
-  listContainer: {
-    flex: 1,
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
+  container: {
+    height: 320,
+    borderRadius: 8,
+    padding: 24,
   },
-  centered: {
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 8,
-    textAlign: "center",
-  },
-  listGestureView: { flex: 1, overflow: "hidden" },
-  animatedList: { flexDirection: "row", height: "100%" },
-  flatlistContent: { paddingVertical: 4, paddingHorizontal: 4, gap: 8 },
-  itemRow: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 16,
   },
-  itemName: { flex: 1, marginRight: 8 },
-  itemDetails: { flexDirection: "row", alignItems: "center", gap: 12 },
-  itemQuantity: { fontWeight: "bold" },
+  sortButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    backgroundColor: "rgba(128, 128, 128, 0.2)",
+  },
+  sortButtonText: {
+    fontSize: 12,
+    fontWeight: "500",
+    marginRight: 8,
+  },
+  listContainer: {
+    flex: 1,
+    overflow: "hidden",
+  },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+  },
+  emptyText: {
+    marginTop: 12,
+    textAlign: "center",
+  },
+  itemList: {
+    flex: 1,
+  },
+  itemRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(128, 128, 128, 0.1)",
+  },
+  itemText: {
+    flex: 1,
+    fontSize: 14,
+  },
+  itemQuantity: {
+    fontWeight: "bold",
+    marginHorizontal: 16,
+  },
 });
 
 export default InventoryStockCard;

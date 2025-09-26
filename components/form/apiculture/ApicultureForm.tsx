@@ -1,40 +1,160 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { FormModal } from "@/components/modals/FormModal";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
-  Appbar,
-  Button,
+  faBox,
+  faBug,
+  faChevronDown,
+  faClipboard,
+  faRulerCombined,
+  faTag,
+  faTruck,
+  faWarehouse,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import React, { useEffect, useState } from "react";
+import { Alert, StyleSheet, View } from "react-native";
+import {
   HelperText,
-  Modal,
-  Portal,
-  Surface,
-  Text,
+  Menu,
   TextInput,
+  TouchableRipple,
   useTheme,
 } from "react-native-paper";
+
+const BEE_SPECIES = [
+  "Apis mellifera (European Honey Bee)",
+  "Apis cerana (Asiatic Honey Bee)",
+  "Apis dorsata (Giant Honey Bee)",
+  "Trigona (Stingless Bees)",
+  "Other",
+];
+
+const HIVE_TYPES = [
+  "Langstroth",
+  "Top-bar",
+  "Warre",
+  "Flow Hive",
+  "Traditional Log Hive",
+  "Other",
+];
 
 export type ApiaryFormData = {
   apiary_name: string;
   number_of_hives: string;
-  address_line_1: string;
-  address_line_2: string;
-  city: string;
-  state: string;
-  postal_code: string;
+  bee_species: string;
+  hive_type: string;
+  queen_source: string;
   area: string;
+  notes: string;
+};
+
+export type ExistingApiaryData = {
+  apiary_id?: number;
+  user_id: number;
+  apiary_name: string;
+  number_of_hives: number;
+  created_at?: string;
+  area?: number | null;
+  bee_species?: string;
+  hive_type?: string;
+  queen_source?: string;
+  notes?: string;
 };
 
 type ApicultureFormProps = {
   isVisible: boolean;
   onClose: () => void;
   onSubmit: (data: ApiaryFormData) => Promise<void>;
-  apiaryToEdit?: { [key: string]: any } | null;
+  apiaryToEdit?: ExistingApiaryData | null;
   formTitle?: string;
 };
 
-type ApiaryFormErrors = {
-  apiary_name?: string;
-  number_of_hives?: string;
-  area?: string;
+const PaperFormDropdown = ({
+  label,
+  items,
+  selectedValue,
+  onSelect,
+  error,
+  disabled = false,
+  placeholder,
+  leftIcon,
+}: {
+  label: string;
+  items: string[];
+  selectedValue: string;
+  onSelect: (value: string) => void;
+  error?: string;
+  disabled?: boolean;
+  placeholder?: string;
+  leftIcon?: IconDefinition;
+}) => {
+  const [visible, setVisible] = useState(false);
+  const theme = useTheme();
+
+  return (
+    <View style={styles.inputContainerFull}>
+      <Menu
+        visible={visible}
+        onDismiss={() => setVisible(false)}
+        anchor={
+          <TouchableRipple
+            onPress={() => !disabled && setVisible(true)}
+            disabled={disabled}
+          >
+            <View pointerEvents="none">
+              <TextInput
+                mode="outlined"
+                label={label}
+                value={selectedValue}
+                placeholder={placeholder}
+                editable={false}
+                left={
+                  leftIcon && (
+                    <TextInput.Icon
+                      icon={() => (
+                        <FontAwesomeIcon
+                          icon={leftIcon}
+                          size={18}
+                          color={theme.colors.onSurfaceVariant}
+                        />
+                      )}
+                    />
+                  )
+                }
+                right={
+                  <TextInput.Icon
+                    icon={() => (
+                      <FontAwesomeIcon
+                        icon={faChevronDown}
+                        size={16}
+                        color={theme.colors.onSurfaceVariant}
+                      />
+                    )}
+                  />
+                }
+                error={!!error}
+                disabled={disabled}
+              />
+            </View>
+          </TouchableRipple>
+        }
+      >
+        {items.map((item: string) => (
+          <Menu.Item
+            key={item}
+            title={item}
+            onPress={() => {
+              onSelect(item);
+              setVisible(false);
+            }}
+          />
+        ))}
+      </Menu>
+      <HelperText type="error" visible={!!error}>
+        {error}
+      </HelperText>
+    </View>
+  );
 };
 
 const ApicultureForm = ({
@@ -42,21 +162,19 @@ const ApicultureForm = ({
   onClose,
   onSubmit,
   apiaryToEdit,
-  formTitle,
 }: ApicultureFormProps) => {
   const theme = useTheme();
   const [formData, setFormData] = useState<ApiaryFormData>({
     apiary_name: "",
     number_of_hives: "",
-    address_line_1: "",
-    address_line_2: "",
-    city: "",
-    state: "",
-    postal_code: "",
+    bee_species: "",
+    hive_type: "",
+    queen_source: "",
     area: "",
+    notes: "",
   });
-  const [errors, setErrors] = useState<ApiaryFormErrors>({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Partial<ApiaryFormData>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (isVisible) {
@@ -64,175 +182,234 @@ const ApicultureForm = ({
         setFormData({
           apiary_name: apiaryToEdit.apiary_name || "",
           number_of_hives: String(apiaryToEdit.number_of_hives || ""),
-          address_line_1: apiaryToEdit.address_line_1 || "",
-          address_line_2: apiaryToEdit.address_line_2 || "",
-          city: apiaryToEdit.city || "",
-          state: apiaryToEdit.state || "",
-          postal_code: apiaryToEdit.postal_code || "",
+          bee_species: apiaryToEdit.bee_species || "",
+          hive_type: apiaryToEdit.hive_type || "",
+          queen_source: apiaryToEdit.queen_source || "",
           area: apiaryToEdit.area != null ? String(apiaryToEdit.area) : "",
+          notes: apiaryToEdit.notes || "",
         });
       } else {
         setFormData({
           apiary_name: "",
           number_of_hives: "",
-          address_line_1: "",
-          address_line_2: "",
-          city: "",
-          state: "",
-          postal_code: "",
+          bee_species: "",
+          hive_type: "",
+          queen_source: "",
           area: "",
+          notes: "",
         });
       }
       setErrors({});
     }
   }, [apiaryToEdit, isVisible]);
 
-  const handleInputChange = (name: keyof ApiaryFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof ApiaryFormErrors]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
+  const handleInputChange = (field: keyof ApiaryFormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
-  const validateForm = useCallback(() => {
-    const newErrors: ApiaryFormErrors = {};
+  const validateForm = () => {
+    const newErrors: Partial<ApiaryFormData> = {};
     if (!formData.apiary_name.trim())
-      newErrors.apiary_name = "Bee yard name is required.";
+      newErrors.apiary_name = "Bee Yard Name is required.";
     if (!formData.number_of_hives.trim())
       newErrors.number_of_hives = "Number of hives is required.";
-    else if (
-      !/^\d+$/.test(formData.number_of_hives) ||
-      Number(formData.number_of_hives) <= 0
-    ) {
-      newErrors.number_of_hives = "Must be a positive whole number.";
+    else if (isNaN(Number(formData.number_of_hives)))
+      newErrors.number_of_hives = "Must be a valid number.";
+    else if (Number(formData.number_of_hives) < 0)
+      newErrors.number_of_hives = "Cannot be negative.";
+
+    if (formData.area.trim() && isNaN(Number(formData.area))) {
+      newErrors.area = "Must be a valid number if provided.";
+    } else if (formData.area.trim() && Number(formData.area) < 0) {
+      newErrors.area = "Cannot be negative.";
     }
-    if (
-      formData.area.trim() !== "" &&
-      (isNaN(Number(formData.area)) || Number(formData.area) < 0)
-    ) {
-      newErrors.area = "Area must be a non-negative number.";
-    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData]);
+  };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
-    setIsLoading(true);
+    if (!validateForm()) {
+      Alert.alert(
+        "Validation Error",
+        "Please fill all required fields correctly."
+      );
+      return;
+    }
+    setIsSubmitting(true);
     try {
       await onSubmit(formData);
       onClose();
     } catch (error) {
-      console.error("Submission failed in form:", error);
-      setErrors({ apiary_name: "Failed to save bee yard. Please try again." });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const renderInputField = (
-    label: string,
-    name: keyof ApiaryFormData,
-    isOptional = false,
-    keyboardType: "default" | "numeric" = "default"
-  ) => {
-    const error = errors[name as keyof ApiaryFormErrors];
-    return (
-      <View>
-        <TextInput
-          label={isOptional ? `${label} (Optional)` : label}
-          value={formData[name]}
-          onChangeText={(text) => handleInputChange(name, text)}
-          keyboardType={keyboardType}
-          mode="outlined"
-          error={!!error}
-        />
-        <HelperText type="error" visible={!!error}>
-          {error}
-        </HelperText>
-      </View>
-    );
-  };
+  const isEditMode = !!apiaryToEdit;
 
   return (
-    <Portal>
-      <Modal
-        visible={isVisible}
-        onDismiss={onClose}
-        contentContainerStyle={styles.modalContainer}
-      >
-        <Surface style={styles.surface}>
-          <Appbar.Header elevated>
-            <Appbar.Content
-              title={
-                formTitle || (apiaryToEdit ? "Edit Bee Yard" : "Add Bee Yard")
+    <FormModal
+      isVisible={isVisible}
+      onClose={onClose}
+      title={isEditMode ? "Edit Bee Yard" : "Add New Bee Yard"}
+      onSubmit={handleSubmit}
+      isSubmitting={isSubmitting}
+      submitButtonText={isEditMode ? "Update Bee Yard" : "Save Bee Yard"}
+    >
+      <View style={styles.formContainer}>
+        <TextInput
+          mode="outlined"
+          label="Bee Yard Name"
+          placeholder="e.g. Backyard Hives"
+          value={formData.apiary_name}
+          onChangeText={(text) => handleInputChange("apiary_name", text)}
+          error={!!errors.apiary_name}
+          left={
+            <TextInput.Icon
+              icon={() => (
+                <FontAwesomeIcon
+                  icon={faTag}
+                  size={18}
+                  color={theme.colors.onSurfaceVariant}
+                />
+              )}
+            />
+          }
+        />
+        <HelperText type="error" visible={!!errors.apiary_name}>
+          {errors.apiary_name}
+        </HelperText>
+
+        <View style={styles.row}>
+          <View style={styles.halfWidth}>
+            <TextInput
+              mode="outlined"
+              label="Number of Hives"
+              placeholder="e.g. 5"
+              value={formData.number_of_hives}
+              onChangeText={(text) =>
+                handleInputChange(
+                  "number_of_hives",
+                  text.replace(/[^0-9]/g, "")
+                )
+              }
+              error={!!errors.number_of_hives}
+              keyboardType="number-pad"
+              left={
+                <TextInput.Icon
+                  icon={() => (
+                    <FontAwesomeIcon
+                      icon={faWarehouse}
+                      size={18}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  )}
+                />
               }
             />
-            <Appbar.Action icon="close" onPress={onClose} />
-          </Appbar.Header>
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            <HelperText
-              type="error"
-              visible={!!errors.apiary_name && !formData.apiary_name.trim()}
-            >
-              {errors.apiary_name}
+            <HelperText type="error" visible={!!errors.number_of_hives}>
+              {errors.number_of_hives}
             </HelperText>
-            {renderInputField("Bee Yard Name", "apiary_name")}
-            {renderInputField(
-              "Number of Hives",
-              "number_of_hives",
-              false,
-              "numeric"
-            )}
-            {renderInputField("Address Line 1", "address_line_1", true)}
-            {renderInputField("Address Line 2", "address_line_2", true)}
-            <View style={styles.row}>
-              <View style={styles.halfWidth}>
-                {renderInputField("City", "city", true)}
-              </View>
-              <View style={styles.halfWidth}>
-                {renderInputField("State", "state", true)}
-              </View>
-            </View>
-            {renderInputField("Postal Code", "postal_code", true, "numeric")}
-            {renderInputField("Area (m²)", "area", true, "numeric")}
+          </View>
+          <View style={styles.halfWidth}>
+            <TextInput
+              mode="outlined"
+              label="Area (sq. m) (Optional)"
+              placeholder="e.g. 50"
+              value={formData.area}
+              onChangeText={(text) =>
+                handleInputChange("area", text.replace(/[^0-9.]/g, ""))
+              }
+              error={!!errors.area}
+              keyboardType="numeric"
+              left={
+                <TextInput.Icon
+                  icon={() => (
+                    <FontAwesomeIcon
+                      icon={faRulerCombined}
+                      size={18}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  )}
+                />
+              }
+            />
+            <HelperText type="error" visible={!!errors.area}>
+              {errors.area}
+            </HelperText>
+          </View>
+        </View>
 
-            <View style={styles.footer}>
-              <Button onPress={onClose} disabled={isLoading}>
-                Cancel
-              </Button>
-              <Button
-                mode="contained"
-                onPress={handleSubmit}
-                loading={isLoading}
-                disabled={isLoading}
-              >
-                {apiaryToEdit ? "Update" : "Add"}
-              </Button>
-            </View>
-          </ScrollView>
-        </Surface>
-      </Modal>
-    </Portal>
+        <PaperFormDropdown
+          label="Bee Species (Optional)"
+          items={BEE_SPECIES}
+          selectedValue={formData.bee_species}
+          onSelect={(value: string) => handleInputChange("bee_species", value)}
+          leftIcon={faBug}
+        />
+
+        <PaperFormDropdown
+          label="Hive Type (Optional)"
+          items={HIVE_TYPES}
+          selectedValue={formData.hive_type}
+          onSelect={(value: string) => handleInputChange("hive_type", value)}
+          leftIcon={faBox}
+        />
+
+        <TextInput
+          mode="outlined"
+          label="Queen Source (Optional)"
+          placeholder="e.g. Local Supplier"
+          value={formData.queen_source}
+          onChangeText={(text) => handleInputChange("queen_source", text)}
+          left={
+            <TextInput.Icon
+              icon={() => (
+                <FontAwesomeIcon
+                  icon={faTruck}
+                  size={18}
+                  color={theme.colors.onSurfaceVariant}
+                />
+              )}
+            />
+          }
+        />
+        <View style={{ marginBottom: 12 }} />
+
+        <TextInput
+          mode="outlined"
+          label="Notes (Optional)"
+          placeholder="e.g. Hive temperament, nectar flow..."
+          value={formData.notes}
+          onChangeText={(text) => handleInputChange("notes", text)}
+          multiline
+          numberOfLines={4}
+          left={
+            <TextInput.Icon
+              icon={() => (
+                <FontAwesomeIcon
+                  icon={faClipboard}
+                  size={18}
+                  color={theme.colors.onSurfaceVariant}
+                />
+              )}
+            />
+          }
+        />
+      </View>
+    </FormModal>
   );
 };
 
 const styles = StyleSheet.create({
-  modalContainer: { justifyContent: "flex-end" },
-  surface: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    maxHeight: "90%",
-  },
-  scrollContent: { padding: 16 },
-  row: { flexDirection: "row", justifyContent: "space-between", gap: 16 },
+  formContainer: { gap: 4 },
+  inputContainerFull: { marginBottom: 12 },
+  row: { flexDirection: "row", gap: 16 },
   halfWidth: { flex: 1 },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 8,
-    marginTop: 16,
-  },
 });
 
 export default ApicultureForm;

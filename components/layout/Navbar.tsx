@@ -1,9 +1,10 @@
-import { faBars, faBell, faMessage } from "@fortawesome/free-solid-svg-icons";
+import Sparkles from "@/assets/icon/Sparkles";
+import { faBars, faBell } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import {
   Appbar,
@@ -97,8 +98,8 @@ const Navbar = ({ toggleSidebar, toggleChat }: NavbarProps) => {
     [iconColor]
   );
 
-  const memoizedMessageIcon = useCallback(
-    () => <FontAwesomeIcon icon={faMessage} size={22} color={iconColor} />,
+  const memoizedSparklesIcon = useCallback(
+    () => <Sparkles size={38} color={iconColor} />,
     [iconColor]
   );
 
@@ -112,7 +113,7 @@ const Navbar = ({ toggleSidebar, toggleChat }: NavbarProps) => {
       <Appbar.Header elevated>
         <Appbar.Action icon={memoizedBarsIcon} onPress={toggleSidebar} />
         <View style={styles.spacer} />
-        <Appbar.Action icon={memoizedMessageIcon} onPress={toggleChat} />
+        <Appbar.Action icon={memoizedSparklesIcon} onPress={toggleChat} />
         <View>
           <Appbar.Action
             icon={memoizedBellIcon}

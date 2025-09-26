@@ -1,5 +1,6 @@
+import Sparkles from "@/assets/icon/Sparkles";
 import {
-  faPaperPlane,
+  faCircleArrowUp,
   faRobot,
   faTimesCircle,
   faTrashAlt,
@@ -24,6 +25,7 @@ import {
   Button,
   IconButton,
   Surface,
+  Text,
   TextInput,
   useTheme,
 } from "react-native-paper";
@@ -48,6 +50,12 @@ type ChatWindowProps = {
   userId: string;
   onClose: () => void;
 };
+
+const suggestions = [
+  "Fetch all leads from Contacts in CRM",
+  "When is my next veterinary doctor's appointment?",
+  "When should I next milk the cows?",
+];
 
 const ChatWindow = ({ userId, onClose }: ChatWindowProps) => {
   const theme = useTheme();
@@ -76,13 +84,17 @@ const ChatWindow = ({ userId, onClose }: ChatWindowProps) => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages, isLoading]);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
-    const userMessage: Message = { sender: "user", text: input };
+  const handleSend = async (textToSend?: string) => {
+    const messageText = textToSend || input;
+    if (!messageText.trim()) return;
+
+    const userMessage: Message = { sender: "user", text: messageText };
     const updatedMessages = [...messages, userMessage];
 
     setMessages(updatedMessages);
-    setInput("");
+    if (!textToSend) {
+      setInput("");
+    }
     setIsLoading(true);
 
     try {
@@ -111,6 +123,10 @@ const ChatWindow = ({ userId, onClose }: ChatWindowProps) => {
     }
   };
 
+  const handleSuggestionPress = (suggestion: string) => {
+    handleSend(suggestion);
+  };
+
   const handleClearChat = async () => {
     await AsyncStorage.removeItem(`chatMessages_${userId}`);
     setMessages([]);
@@ -127,26 +143,42 @@ const ChatWindow = ({ userId, onClose }: ChatWindowProps) => {
 
   const styles = StyleSheet.create({
     flex: { flex: 1 },
-    overlay: {
-      flex: 1,
-      justifyContent: "flex-end",
-      backgroundColor: "rgba(0,0,0,0.5)",
-    },
-    keyboardAvoidingView: { maxHeight: "85%" },
     chatContainer: {
       flex: 1,
-      borderTopLeftRadius: 16,
-      borderTopRightRadius: 16,
-      overflow: "hidden",
+      backgroundColor: theme.colors.background,
     },
     header: {
-      borderTopLeftRadius: 16,
-      borderTopRightRadius: 16,
-      backgroundColor: theme.colors.elevation.level3,
+      backgroundColor: theme.colors.elevation.level2,
     },
     headerTitle: { fontWeight: "bold" },
+    contentArea: {
+      flex: 1,
+    },
     scrollView: { flex: 1, paddingHorizontal: 16 },
     scrollContent: { paddingBottom: 16, paddingTop: 8 },
+    suggestionContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 24,
+      paddingBottom: 100,
+    },
+    suggestionTitle: {
+      marginTop: 16,
+      marginBottom: 24,
+      textAlign: "center",
+    },
+    suggestionCard: {
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 20,
+      marginBottom: 12,
+      width: "100%",
+      backgroundColor: theme.colors.elevation.level3,
+    },
+    suggestionText: {
+      color: theme.colors.onSurface,
+    },
     messageRow: {
       flexDirection: "row",
       alignItems: "flex-start",
@@ -170,6 +202,7 @@ const ChatWindow = ({ userId, onClose }: ChatWindowProps) => {
       alignItems: "center",
       padding: 8,
       paddingTop: 12,
+      backgroundColor: theme.colors.elevation.level2,
     },
     textInput: { flex: 1 },
     textInputOutline: { borderRadius: 24 },
@@ -177,51 +210,60 @@ const ChatWindow = ({ userId, onClose }: ChatWindowProps) => {
   });
 
   return (
-    <Pressable onPress={onClose} style={styles.overlay}>
-      <Pressable style={styles.flex}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.keyboardAvoidingView}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-        >
-          <Surface
-            style={[
-              styles.chatContainer,
-              { backgroundColor: theme.colors.elevation.level1 },
-            ]}
-            elevation={4}
-          >
-            <Appbar.Header elevated style={styles.header}>
-              <Appbar.Content
-                title="Graminate AI"
-                titleStyle={styles.headerTitle}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.flex}
+    >
+      <Surface style={styles.chatContainer}>
+        <Appbar.Header elevated style={styles.header}>
+          <Appbar.Content
+            title="Graminate AI"
+            titleStyle={styles.headerTitle}
+          />
+          {messages.length > 0 && (
+            <Button
+              mode="text"
+              onPress={handleClearChat}
+              textColor={theme.colors.error}
+              icon={() => (
+                <FontAwesomeIcon
+                  icon={faTrashAlt}
+                  size={18}
+                  color={theme.colors.error}
+                />
+              )}
+            >
+              Clear
+            </Button>
+          )}
+          <Appbar.Action
+            icon={() => (
+              <FontAwesomeIcon
+                icon={faTimesCircle}
+                size={24}
+                color={theme.colors.onSurfaceVariant}
               />
-              <Button
-                mode="text"
-                onPress={handleClearChat}
-                textColor={theme.colors.error}
-                icon={() => (
-                  <FontAwesomeIcon
-                    icon={faTrashAlt}
-                    size={18}
-                    color={theme.colors.error}
-                  />
-                )}
-              >
-                Clear
-              </Button>
-              <Appbar.Action
-                icon={() => (
-                  <FontAwesomeIcon
-                    icon={faTimesCircle}
-                    size={24}
-                    color={theme.colors.onSurfaceVariant}
-                  />
-                )}
-                onPress={onClose}
-              />
-            </Appbar.Header>
+            )}
+            onPress={onClose}
+          />
+        </Appbar.Header>
 
+        <View style={styles.contentArea}>
+          {messages.length === 0 && !isLoading ? (
+            <View style={styles.suggestionContainer}>
+              <Sparkles size={48} color={theme.colors.onSurfaceVariant} />
+              <Text variant="headlineSmall" style={styles.suggestionTitle}>
+                How can I help today?
+              </Text>
+              {suggestions.map((s, i) => (
+                <Pressable key={i} onPress={() => handleSuggestionPress(s)}>
+                  <Surface style={styles.suggestionCard} elevation={1}>
+                    <Text style={styles.suggestionText}>{s}</Text>
+                  </Surface>
+                </Pressable>
+              ))}
+            </View>
+          ) : (
             <ScrollView
               ref={scrollViewRef}
               style={styles.scrollView}
@@ -289,48 +331,42 @@ const ChatWindow = ({ userId, onClose }: ChatWindowProps) => {
                 </View>
               )}
             </ScrollView>
+          )}
+        </View>
 
-            <Surface
-              style={[
-                styles.inputContainer,
-                { backgroundColor: theme.colors.elevation.level2 },
-              ]}
-              elevation={2}
-            >
-              <TextInput
-                style={styles.textInput}
-                mode="outlined"
-                placeholder="Ask Graminate AI..."
-                value={input}
-                onChangeText={setInput}
-                onSubmitEditing={handleSend}
-                editable={!isLoading}
-                multiline
-                outlineStyle={styles.textInputOutline}
+        <Surface style={styles.inputContainer} elevation={2}>
+          <TextInput
+            style={styles.textInput}
+            mode="outlined"
+            placeholder="Ask Graminate AI..."
+            value={input}
+            onChangeText={setInput}
+            onSubmitEditing={() => handleSend()}
+            editable={!isLoading}
+            multiline
+            outlineStyle={styles.textInputOutline}
+          />
+          <IconButton
+            icon={() => (
+              <FontAwesomeIcon
+                icon={faCircleArrowUp}
+                size={38}
+                color={
+                  isLoading || input.trim() === ""
+                    ? theme.colors.onSurfaceDisabled
+                    : theme.colors.primary
+                }
               />
-              <IconButton
-                icon={() => (
-                  <FontAwesomeIcon
-                    icon={faPaperPlane}
-                    size={20}
-                    color={
-                      isLoading || input.trim() === ""
-                        ? theme.colors.onSurfaceDisabled
-                        : theme.colors.onPrimaryContainer
-                    }
-                  />
-                )}
-                mode="contained"
-                size={24}
-                onPress={handleSend}
-                disabled={isLoading || input.trim() === ""}
-                style={styles.sendButton}
-              />
-            </Surface>
-          </Surface>
-        </KeyboardAvoidingView>
-      </Pressable>
-    </Pressable>
+            )}
+            mode="contained"
+            size={24}
+            onPress={() => handleSend()}
+            disabled={isLoading || input.trim() === ""}
+            style={styles.sendButton}
+          />
+        </Surface>
+      </Surface>
+    </KeyboardAvoidingView>
   );
 };
 

@@ -1,8 +1,17 @@
-
-import ApicultureForm, { ApiaryFormData } from "@/components/form/apiculture/ApicultureForm";
+import ApicultureForm, {
+  ApiaryFormData,
+} from "@/components/form/apiculture/ApicultureForm";
 import HiveForm, { HiveFormData } from "@/components/form/apiculture/HiveForm";
 import PlatformLayout from "@/components/layout/PlatformLayout";
 import axiosInstance from "@/lib/axiosInstance";
+import {
+  faBeer,
+  faCalendarDays,
+  faMapMarkerAlt,
+  faVectorSquare,
+} from "@fortawesome/free-solid-svg-icons";
+
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
@@ -153,22 +162,22 @@ const ApicultureDetailPage = () => {
       {
         label: "Address",
         value: fullAddress || "N/A",
-        icon: "map-marker-outline",
+        icon: faMapMarkerAlt,
       },
       {
         label: "Total Hives",
         value: String(apiaryData.number_of_hives),
-        icon: "beehive-outline",
+        icon: faBeer,
       },
       {
         label: "Area",
         value: apiaryData.area != null ? `${apiaryData.area} sq. m` : "N/A",
-        icon: "texture-box",
+        icon: faVectorSquare,
       },
       {
         label: "Created On",
         value: new Date(apiaryData.created_at).toLocaleDateString(),
-        icon: "calendar",
+        icon: faCalendarDays,
       },
     ];
   }, [apiaryData]);
@@ -216,7 +225,15 @@ const ApicultureDetailPage = () => {
                       key={item.label}
                       title={item.value}
                       description={item.label}
-                      left={() => <List.Icon icon={item.icon} />}
+                      left={(props) => (
+                        <View {...props} style={styles.iconContainer}>
+                          <FontAwesomeIcon
+                            icon={item.icon}
+                            size={24}
+                            color={theme.colors.onSurfaceVariant}
+                          />
+                        </View>
+                      )}
                       style={styles.detailItem}
                     />
                   ))}
@@ -297,6 +314,13 @@ const styles = StyleSheet.create({
   loader: { marginVertical: 24 },
   detailsGrid: { flexDirection: "row", flexWrap: "wrap" },
   detailItem: { width: "50%" },
+  iconContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 24,
+    marginLeft: 14,
+    marginRight: 18,
+  },
   hivesSection: { gap: 16 },
   searchbar: {},
   hiveCard: { marginBottom: 12 },

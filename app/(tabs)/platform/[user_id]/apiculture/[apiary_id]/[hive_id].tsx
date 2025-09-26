@@ -5,6 +5,20 @@ import InspectionForm, {
 } from "@/components/form/apiculture/InspectionForm";
 import PlatformLayout from "@/components/layout/PlatformLayout";
 import axiosInstance from "@/lib/axiosInstance";
+import {
+  faBeer,
+  faBug,
+  faCalendarCheck,
+  faChessQueen,
+  faJar,
+  faNoteSticky,
+  faSeedling,
+  faTriangleExclamation,
+  faUsers,
+  faVial,
+  faWind,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import { Alert, ScrollView, StyleSheet, View } from "react-native";
@@ -126,36 +140,36 @@ const HiveDetailsPage = () => {
       {
         label: "Hive Type",
         value: hiveData.hive_type || "N/A",
-        icon: "beehive-outline",
+        icon: faBeer,
       },
       {
         label: "Bee Species",
         value: hiveData.bee_species || "N/A",
-        icon: "bee",
+        icon: faBug,
       },
       {
         label: "Installation Date",
         value: hiveData.installation_date
           ? new Date(hiveData.installation_date).toLocaleDateString()
           : "N/A",
-        icon: "calendar-check",
+        icon: faCalendarCheck,
       },
       {
         label: "Honey Capacity",
         value: hiveData.honey_capacity
           ? `${hiveData.honey_capacity} ${hiveData.unit || ""}`.trim()
           : "N/A",
-        icon: "honey",
+        icon: faJar,
       },
       {
         label: "Ventilation",
         value: hiveData.ventilation_status || "N/A",
-        icon: "weather-windy",
+        icon: faWind,
       },
       {
         label: "Notes",
         value: hiveData.notes || "N/A",
-        icon: "note-text-outline",
+        icon: faNoteSticky,
       },
     ];
   }, [hiveData]);
@@ -167,7 +181,7 @@ const HiveDetailsPage = () => {
         {
           label: "Last Inspection",
           value: "No inspection data found",
-          icon: "alert-triangle-outline",
+          icon: faTriangleExclamation,
         },
       ];
     return [
@@ -176,42 +190,42 @@ const HiveDetailsPage = () => {
         value: latestInspection.inspection_date
           ? new Date(latestInspection.inspection_date).toLocaleDateString()
           : "N/A",
-        icon: "calendar-check",
+        icon: faCalendarCheck,
       },
       {
         label: "Queen Status",
         value: latestInspection.queen_status || "N/A",
-        icon: "crown-outline",
+        icon: faChessQueen,
       },
       {
         label: "Brood Pattern",
         value: latestInspection.brood_pattern || "N/A",
-        icon: "beaker-outline",
+        icon: faVial,
       },
       {
         label: "Population Strength",
         value: latestInspection.population_strength || "N/A",
-        icon: "account-group-outline",
+        icon: faUsers,
       },
       {
         label: "Brood Frames",
         value: String(latestInspection.frames_of_brood ?? "N/A"),
-        icon: "bug-outline",
+        icon: faBug,
       },
       {
         label: "Nectar/Honey Frames",
         value: String(latestInspection.frames_of_nectar_honey ?? "N/A"),
-        icon: "honey-outline",
+        icon: faJar,
       },
       {
         label: "Pollen Frames",
         value: String(latestInspection.frames_of_pollen ?? "N/A"),
-        icon: "flower-pollen-outline",
+        icon: faSeedling,
       },
       {
         label: "Symptoms",
         value: latestInspection.symptoms?.join(", ") || "No symptoms noted",
-        icon: "alert-triangle-outline",
+        icon: faTriangleExclamation,
       },
     ];
   }, [inspections]);
@@ -255,7 +269,15 @@ const HiveDetailsPage = () => {
                 key={item.label}
                 title={item.value}
                 description={item.label}
-                left={() => <List.Icon icon={item.icon} />}
+                left={(props) => (
+                  <View {...props} style={styles.iconContainer}>
+                    <FontAwesomeIcon
+                      icon={item.icon}
+                      size={24}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  </View>
+                )}
                 style={styles.detailItem}
                 titleNumberOfLines={3}
               />
@@ -292,7 +314,15 @@ const HiveDetailsPage = () => {
                     key={item.label}
                     title={item.value}
                     description={item.label}
-                    left={() => <List.Icon icon={item.icon} />}
+                    left={(props) => (
+                      <View {...props} style={styles.iconContainer}>
+                        <FontAwesomeIcon
+                          icon={item.icon}
+                          size={24}
+                          color={theme.colors.onSurfaceVariant}
+                        />
+                      </View>
+                    )}
                     style={styles.detailItem}
                     titleNumberOfLines={3}
                   />
@@ -378,6 +408,13 @@ const styles = StyleSheet.create({
   card: {},
   detailsGrid: { flexDirection: "row", flexWrap: "wrap" },
   detailItem: { width: "50%" },
+  iconContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 24,
+    marginLeft: 14,
+    marginRight: 18,
+  },
   cardTitleRight: { marginRight: 8 },
   segmentedButtons: { marginBottom: 16 },
   loader: { marginVertical: 24 },

@@ -5,6 +5,18 @@ import FlockForm, { FlockFormData } from "@/components/form/poultry/FlockForm";
 import PlatformLayout from "@/components/layout/PlatformLayout";
 import axiosInstance from "@/lib/axiosInstance";
 import {
+  faArrowLeft,
+  faChartPie,
+  faChevronDown,
+  faChevronUp,
+  faCreditCard,
+  faMoneyBillWave,
+  faPiggyBank,
+  faPlus,
+  faShoppingCart,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import {
   addDays as addDaysDateFns,
   endOfMonth,
   format as formatDateFns,
@@ -22,7 +34,6 @@ import {
   Card,
   Searchbar,
   Text,
-  Title,
   useTheme,
 } from "react-native-paper";
 
@@ -171,13 +182,13 @@ const PoultryScreen = () => {
 
   const processSalesData = useCallback(
     (sales: SaleRecord[]): Map<string, MetricBreakdown> => {
-      /* unchanged */ return new Map();
+      return new Map();
     },
     []
   );
   const processExpensesData = useCallback(
     (expenses: ExpenseRecord[]): Map<string, ProcessedExpensesForDay> => {
-      /* unchanged */ return new Map();
+      return new Map();
     },
     []
   );
@@ -282,35 +293,35 @@ const PoultryScreen = () => {
       {
         title: "Poultry Revenue",
         value: totals.revenue,
-        icon: "cash",
+        icon: faMoneyBillWave,
         bgColor: isDark ? "#14532d" : "#dcfce7",
         iconValueColor: isDark ? "#86efac" : "#16a34a",
       },
       {
         title: "Poultry COGS",
         value: totals.cogs,
-        icon: "cart-outline",
+        icon: faShoppingCart,
         bgColor: isDark ? "#713f12" : "#fef3c7",
         iconValueColor: isDark ? "#fcd34d" : "#b45309",
       },
       {
         title: "Poultry Gross Profit",
         value: grossProfit,
-        icon: "chart-pie",
+        icon: faChartPie,
         bgColor: isDark ? "#164e63" : "#cffafe",
         iconValueColor: isDark ? "#67e8f9" : "#0891b2",
       },
       {
         title: "Poultry Expenses",
         value: totals.expenses,
-        icon: "credit-card-outline",
+        icon: faCreditCard,
         bgColor: isDark ? "#7f1d1d" : "#fee2e2",
         iconValueColor: isDark ? "#fca5a5" : "#b91c1c",
       },
       {
         title: "Poultry Net Profit",
         value: netProfit,
-        icon: "piggy-bank-outline",
+        icon: faPiggyBank,
         bgColor: isDark ? "#1e3a8a" : "#dbeafe",
         iconValueColor: isDark ? "#93c5fd" : "#2563eb",
       },
@@ -328,27 +339,46 @@ const PoultryScreen = () => {
 
   return (
     <PlatformLayout>
+      <Appbar.Header>
+        <Appbar.Action
+          icon={() => (
+            <FontAwesomeIcon
+              icon={faArrowLeft}
+              size={22}
+              color={theme.colors.onSurface}
+            />
+          )}
+          onPress={() => router.back()}
+        />
+        <Appbar.Content
+          title="Poultry Flocks"
+          subtitle={
+            loadingFlocks
+              ? "Loading..."
+              : `${filteredFlockRecords.length} Record(s)`
+          }
+        />
+        <Appbar.Action
+          icon={() => (
+            <FontAwesomeIcon
+              icon={faPlus}
+              size={22}
+              color={theme.colors.onSurface}
+            />
+          )}
+          onPress={() => setIsFormVisible(true)}
+        />
+      </Appbar.Header>
       <ScrollView style={{ backgroundColor: theme.colors.background }}>
-        <View style={styles.header}>
-          <View>
-            <Text variant="headlineMedium">Poultry Flocks</Text>
-            <Text variant="bodyMedium">
-              {loadingFlocks
-                ? "Loading..."
-                : `${filteredFlockRecords.length} Record(s)`}
-            </Text>
-          </View>
-          <Button
-            icon="plus"
-            mode="contained"
-            onPress={() => setIsFormVisible(true)}
-          >
-            Add Flock
-          </Button>
-        </View>
         <View style={styles.toggleContainer}>
           <Button
-            icon={showFinancials ? "chevron-up" : "chevron-down"}
+            icon={() => (
+              <FontAwesomeIcon
+                icon={showFinancials ? faChevronUp : faChevronDown}
+                size={16}
+                color={theme.colors.primary}
+              />
+            )}
             onPress={() => setShowFinancials(!showFinancials)}
           >
             {showFinancials ? "Hide Finances" : "Show Finances"}
@@ -401,7 +431,7 @@ const PoultryScreen = () => {
             ))
           ) : (
             <Text style={styles.emptyText}>
-              No flocks found. Tap 'Add Flock' to get started.
+              No flocks found. Tap '+' to get started.
             </Text>
           )}
         </View>
@@ -428,16 +458,10 @@ const PoultryScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-  },
   toggleContainer: {
     alignItems: "flex-end",
     paddingHorizontal: 16,
-    paddingBottom: 8,
+    paddingTop: 8,
   },
   loader: { marginVertical: 16 },
   cardScroller: { gap: 16, paddingHorizontal: 16, paddingBottom: 16 },
@@ -450,7 +474,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   emptyText: { textAlign: "center", marginTop: 40, padding: 16 },
-  widgetContainer: { padding: 16, gap: 16 },
+  widgetContainer: { gap: 16 },
 });
 
 export default PoultryScreen;

@@ -1,9 +1,9 @@
+import BeeIcon from "@/assets/icon/BeeIcon"; // 1. Import BeeIcon
 import PlatformLayout from "@/components/layout/PlatformLayout";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import {
   faArrowLeft,
   faBell,
-  faBug,
   faChevronRight,
   faCloudSun,
   faCog,
@@ -15,7 +15,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from "react"; // Make sure React is imported
 import { ScrollView, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
@@ -25,11 +25,12 @@ import {
   useTheme,
 } from "react-native-paper";
 
+// 2. Update the type to be flexible
 type SettingsItem = {
   label: string;
   type: "navigate";
   routeName?: string;
-  icon: IconDefinition;
+  icon: IconDefinition | React.ComponentType<{ size: number; color: string }>;
 };
 type SettingsSection = { label: string; items: SettingsItem[] };
 
@@ -93,7 +94,7 @@ const SettingsScreen = () => {
             label: "Apiculture",
             type: "navigate",
             routeName: `/platform/${user_id}/settings/apiculture`,
-            icon: faBug,
+            icon: BeeIcon, // 3. Replace faBug with BeeIcon
           });
       }
     }
@@ -151,18 +152,25 @@ const SettingsScreen = () => {
                     onPress={() =>
                       item.routeName && router.push(item.routeName as any)
                     }
-                    left={(props) => (
-                      <List.Icon
-                        {...props}
-                        icon={() => (
+                    // 4. Implement conditional rendering logic
+                    left={(props) => {
+                      let iconElement;
+                      if (typeof item.icon === "function") {
+                        const CustomIcon = item.icon;
+                        iconElement = (
+                          <CustomIcon size={22} color={props.color} />
+                        );
+                      } else {
+                        iconElement = (
                           <FontAwesomeIcon
                             icon={item.icon}
                             size={22}
                             color={props.color}
                           />
-                        )}
-                      />
-                    )}
+                        );
+                      }
+                      return <List.Icon {...props} icon={() => iconElement} />;
+                    }}
                     right={(props) => (
                       <List.Icon
                         {...props}
