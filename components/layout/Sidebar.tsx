@@ -116,14 +116,6 @@ const Sidebar = ({ closeSidebar, userId }: SidebarProps) => {
     ];
 
     if (userType === "Producer") {
-      if (subTypes.includes("Fishery"))
-        base.push({
-          icon: faFish,
-          label: "Fishery Farm",
-          section: "Fishery Farm",
-          route: `/platform/${currentUserId}/fishery`,
-          subItems: [],
-        });
       if (subTypes.includes("Poultry"))
         base.push({
           icon: faEgg,

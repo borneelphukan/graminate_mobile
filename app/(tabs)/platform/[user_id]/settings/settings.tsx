@@ -74,13 +74,6 @@ const SettingsScreen = () => {
             routeName: `/platform/${user_id}/settings/poultry`,
             icon: faEgg,
           });
-        if (subTypes.includes("Fishery"))
-          preferenceItems.push({
-            label: "Fishery",
-            type: "navigate",
-            routeName: `/platform/${user_id}/settings/fishery`,
-            icon: faFish,
-          });
         if (subTypes.includes("Cattle Rearing"))
           preferenceItems.push({
             label: "Cattle Rearing",

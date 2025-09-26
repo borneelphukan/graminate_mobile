@@ -2,7 +2,6 @@ export const GENDER = ["Male", "Female", "Other"];
 export const YESNO = ["Yes", "No"];
 export const LANGUAGES = ["English", "Hindi", "Assamese"];
 export const POULTRY_TYPES = ["Layers", "Broilers", "Dual-Purpose", "Breeder"];
-export const FISHERY_TYPES = ["Freshwater Aquaculture"];
 
 export const FEED_TYPES = [
   "Pelleted Feed (Commercial)",
@@ -126,30 +125,6 @@ export const POULTRY_EXPENSE_CONFIG: ExpenseCategoryConfig = {
       "Water Supply",
       "Taxes",
       "Others",
-    ],
-  },
-  expenseTypeMap: {
-    COGS: "Goods & Services",
-    OPERATING_EXPENSES: "Utility Expenses",
-  },
-};
-
-export const FISHERY_EXPENSE_CONFIG: ExpenseCategoryConfig = {
-  detailedCategories: {
-    "Goods & Services": [
-      "Farm Utilities",
-      "Agricultural Feeds",
-      "Consulting",
-      "Fish Seed",
-      "Pond Preparation",
-    ],
-    "Utility Expenses": [
-      "Electricity",
-      "Labour Salary",
-      "Water Supply",
-      "Taxes",
-      "Others",
-      "Equipment Maintenance",
     ],
   },
   expenseTypeMap: {

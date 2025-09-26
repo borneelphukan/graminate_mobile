@@ -44,7 +44,6 @@ type ServiceConfig = {
 };
 
 const SERVICE_CONFIG: ServiceConfig = {
-  Fishery: { endpoint: "fishery", occupation: "Fishery" },
   "Cattle Rearing": {
     endpoint: "cattle-rearing",
     occupation: "Cattle Rearing",
@@ -57,7 +56,6 @@ const AgricultureIcons: Record<
   string,
   IconDefinition | React.ComponentType<any>
 > = {
-  Fishery: faFish,
   Poultry: faEgg,
   "Cattle Rearing": faCow,
   Apiculture: BeeIcon,
